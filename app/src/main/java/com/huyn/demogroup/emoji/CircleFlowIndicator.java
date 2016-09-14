@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +17,11 @@ import android.view.ViewGroup;
 public class CircleFlowIndicator extends View implements FlowIndicator{
 	private static final int STYLE_STROKE = 0;
 	private static final int STYLE_FILL = 1;
-	private float radius = 4;
+	private float radius = 10;
 	private int currentIndex = 0;
 	private float centeringOffset = 0;
 	private final Paint mPaintInactive = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final Paint mPaintActive = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private ViewGroup viewGroup = null;
 	private int count = 0;
 	
 	public CircleFlowIndicator(Context context) {
@@ -35,13 +33,12 @@ public class CircleFlowIndicator extends View implements FlowIndicator{
 
 		int activeType = STYLE_FILL;
 		
-		int activeDefaultColor = 0xFFFFFFFF;
+		int activeDefaultColor = 0xFFFF0000;
 
 		int inactiveType = STYLE_STROKE;
 
-		int inactiveDefaultColor = 0x44FFFFFF;
+		int inactiveDefaultColor = 0xFFFF0000;
 
-		radius = 6;
 		initColors(activeDefaultColor, inactiveDefaultColor, activeType, inactiveType);
 		
 	}
@@ -70,10 +67,6 @@ public class CircleFlowIndicator extends View implements FlowIndicator{
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		if(viewGroup != null){
-			count = viewGroup.getChildCount();
-		}
-		
 		float circleSeparation = 2*radius+radius;
 		int leftPadding = getPaddingLeft();
 		
@@ -100,9 +93,6 @@ public class CircleFlowIndicator extends View implements FlowIndicator{
 		if (specMode == MeasureSpec.EXACTLY) {
 			result = specSize;
 		}else {
-			if (viewGroup != null) {
-				count = viewGroup.getChildCount();
-			}
 			result = (int) (getPaddingLeft() + getPaddingRight()
 					+ (count * 2 * radius) + (count - 1) * radius + 1);
 			if (specMode == MeasureSpec.AT_MOST) {
@@ -136,10 +126,7 @@ public class CircleFlowIndicator extends View implements FlowIndicator{
 	}
 
 	@Override
-	public void setViewFlow(ViewGroup viewGroup, int count) {
-		if(!(viewGroup instanceof ViewPager)){
-			this.viewGroup = viewGroup; 
-		}
+	public void setViewFlow(int count) {
 		this.count = count;
 		invalidate();
 	}

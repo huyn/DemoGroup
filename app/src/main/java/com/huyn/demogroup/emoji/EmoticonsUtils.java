@@ -194,9 +194,9 @@ public class EmoticonsUtils {
 		expressionView.initExpression();
 		expressionView.bindEditText(editor);
 
-		//CircleFlowIndicator flowIndicator = (CircleFlowIndicator) popupView.findViewById(R.id.wala_flow_indicator);
-		//flowIndicator.setViewFlow(expressionView, 4);
-		//expressionView.setViewSwitchListener(flowIndicator);
+		CircleFlowIndicator flowIndicator = (CircleFlowIndicator) popupView.findViewById(R.id.wala_flow_indicator);
+		flowIndicator.setViewFlow(expressionView.getSize());
+		expressionView.setViewSwitchListener(flowIndicator);
 
 		checkKeyboardHeight(rootView);
 		if (!isSetEditListener) {

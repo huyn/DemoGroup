@@ -76,7 +76,7 @@ public class ExpressionViewNew extends ViewPager {
 		super(context, attrs);
 		this.context = context;
 		columns = 8;
-		row = 8;
+		row = 7;
 		verticalSpacing = 40;
 		setOnPageChangeListener(pageChangeListener);
 	}
@@ -207,8 +207,9 @@ public class ExpressionViewNew extends ViewPager {
 		gridView.setVerticalSpacing(verticalSpacing);
 		gridView.setSelector(android.R.color.transparent);
 		gridView.setGravity(Gravity.CENTER);
-		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		params.gravity = Gravity.CENTER_VERTICAL;
+		params.topMargin = 40;
 		FrameLayout layout = new FrameLayout(context);
 		layout.addView(gridView, params);
 		return layout;
@@ -306,7 +307,10 @@ public class ExpressionViewNew extends ViewPager {
 			return listView.get(position);
 		}
 
-        
+	}
+
+	public int getSize() {
+		return listView != null ? listView.size() : 0;
 	}
 
 }
