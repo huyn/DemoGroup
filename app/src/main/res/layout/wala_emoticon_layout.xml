@@ -1,0 +1,24 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fdfdfd" >
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2px"
+        android:background="#333333" />
+
+    <com.huyn.demogroup.emoji.ExpressionViewNew
+        android:id="@+id/wala_expression_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
+
+    <com.huyn.demogroup.emoji.CircleFlowIndicator
+        android:id="@+id/wala_flow_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dip"/>
+
+</RelativeLayout>
