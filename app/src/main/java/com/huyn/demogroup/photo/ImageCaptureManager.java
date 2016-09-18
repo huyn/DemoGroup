@@ -40,9 +40,13 @@ public class ImageCaptureManager {
     File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
     if (!storageDir.exists()) {
-      if (!storageDir.mkdir()) {
-        Log.e("TAG", "Throwing Errors....");
-        throw new IOException();
+      try {
+        if (!storageDir.mkdir()) {
+          Log.e("TAG", "getExternalStoragePublicDirectory Throwing Errors....");
+          createDirInCache(storageDir);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
       }
     }
 
@@ -58,6 +62,9 @@ public class ImageCaptureManager {
     return image;
   }
 
+  private void createDirInCache(File storageDir) {
+
+  }
 
   public Intent dispatchTakePictureIntent() throws IOException {
     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

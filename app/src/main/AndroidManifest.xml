@@ -30,8 +30,8 @@
             android:theme="@style/customTheme" />
     </application>
 
-    <permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.CAMERA" />
