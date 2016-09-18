@@ -21,6 +21,9 @@
         <activity android:name=".emoji.EmojiActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait" />
+        <activity android:name=".photo.PhotoMainActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

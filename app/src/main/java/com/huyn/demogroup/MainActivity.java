@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.huyn.demogroup.emoji.EmojiActivity;
+import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, EmojiActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_photo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PhotoMainActivity.class));
             }
         });
     }
