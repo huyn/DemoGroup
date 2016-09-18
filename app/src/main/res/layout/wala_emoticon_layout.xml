@@ -6,7 +6,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2px"
-        android:background="#333333" />
+        android:background="#aaaaaa" />
 
     <com.huyn.demogroup.emoji.ExpressionViewNew
         android:id="@+id/wala_expression_view"
@@ -19,6 +19,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dip"/>
+        android:paddingBottom="20dip"/>
 
 </RelativeLayout>

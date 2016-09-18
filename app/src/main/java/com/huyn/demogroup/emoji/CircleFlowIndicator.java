@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 
 /**
  * 浮动圆点视图
@@ -40,7 +39,6 @@ public class CircleFlowIndicator extends View implements FlowIndicator{
 		int inactiveDefaultColor = 0xFFFF0000;
 
 		initColors(activeDefaultColor, inactiveDefaultColor, activeType, inactiveType);
-		
 	}
 	
 	private void initColors(int activeColor, int inactiveColor, int activeType,
