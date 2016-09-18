@@ -1,8 +1,13 @@
 *.iml
 .gradle
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
 .DS_Store
 /build
 /captures
+.idea/
+/src/androidTest/
+/src/test/
+app/libs/
+app/src/androidTest/
+app/src/main/res/drawable/
+app/src/test/
