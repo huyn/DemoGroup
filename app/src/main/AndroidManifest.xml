@@ -24,6 +24,27 @@
         <activity android:name=".photo.PhotoMainActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait" />
+        <activity android:name=".photo.PhotoPickerActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
     </application>
+
+    <permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!--
+      - Include all the "features" under the camera permission,
+      - and mark them all as optional.
+      -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
 </manifest>

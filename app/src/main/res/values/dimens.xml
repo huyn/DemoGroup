@@ -15,6 +15,6 @@
     <dimen name="refresh_padding">2dip</dimen>
     <dimen name="keyboard_height">200dip</dimen>
 
-
     <dimen name="picker_item_directory_height">80dp</dimen>
+
 </resources>
