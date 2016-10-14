@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.huyn.demogroup.emoji.EmojiActivity;
+import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 
@@ -34,6 +35,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, PhotoMainActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_infinitecycleviewpager).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, InfiniteCyclerViewPagerActivity.class));
             }
         });
     }
