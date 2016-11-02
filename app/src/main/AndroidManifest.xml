@@ -9,7 +9,8 @@
         android:supportsRtl="true"
         android:name=".BaseApplication"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,6 +28,14 @@
         <activity android:name=".photo.PhotoPickerActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
+        <activity android:name=".event.TestEventDeliveryActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
+        <activity android:name=".anim.ThreeDRotateActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="landscape"
             android:theme="@style/customTheme" />
         <activity android:name=".infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"

@@ -20,26 +20,14 @@ public class HorizontalPagerAdapter extends PagerAdapter {
                     R.drawable.ic_strategy,
                     "Strategy"
             ),
-            new Utils.LibraryObject(
-                    R.drawable.ic_design,
-                    "Design"
-            ),
-            new Utils.LibraryObject(
-                    R.drawable.ic_development,
-                    "Development"
-            ),
-            new Utils.LibraryObject(
-                    R.drawable.ic_qa,
-                    "Quality Assurance"
-            ),
-            new Utils.LibraryObject(
-                    R.drawable.ic_qa,
-                    "Quality Assurance"
-            ),
-            new Utils.LibraryObject(
-                    R.drawable.ic_qa,
-                    "Quality Assurance"
-            ),
+//            new Utils.LibraryObject(
+//                    R.drawable.ic_design,
+//                    "Design"
+//            ),
+//            new Utils.LibraryObject(
+//                    R.drawable.ic_development,
+//                    "Development"
+//            ),
             new Utils.LibraryObject(
                     R.drawable.ic_qa,
                     "Quality Assurance"

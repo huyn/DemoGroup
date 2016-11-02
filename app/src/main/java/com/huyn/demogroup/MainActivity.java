@@ -5,7 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.huyn.demogroup.anim.ThreeDRotateActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
+import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
@@ -42,6 +44,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, InfiniteCyclerViewPagerActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_event).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, TestEventDeliveryActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_rotateanim).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ThreeDRotateActivity.class));
             }
         });
     }

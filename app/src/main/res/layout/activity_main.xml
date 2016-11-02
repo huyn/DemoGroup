@@ -1,40 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.huyn.demogroup.MainActivity">
+    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/click_relativetop"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="RelativeTop" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.huyn.demogroup.MainActivity">
 
-    <Button
-        android:id="@+id/click_emoji"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:text="Emoji" />
+        <Button
+            android:id="@+id/click_relativetop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RelativeTop" />
 
-    <Button
-        android:id="@+id/click_photo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:text="Select Photo" />
+        <Button
+            android:id="@+id/click_emoji"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="Emoji" />
 
-    <Button
-        android:id="@+id/click_infinitecycleviewpager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:text="InfiniteCycleViewPager" />
+        <Button
+            android:id="@+id/click_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="Select Photo" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/click_infinitecycleviewpager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="InfiniteCycleViewPager" />
+
+        <Button
+            android:id="@+id/click_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="TestEventDelivery" />
+
+        <Button
+            android:id="@+id/click_rotateanim"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="RotateAnim" />
+
+    </LinearLayout>
+</ScrollView>

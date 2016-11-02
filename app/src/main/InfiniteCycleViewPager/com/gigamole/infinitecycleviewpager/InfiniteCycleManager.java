@@ -33,7 +33,7 @@ import static com.gigamole.infinitecycleviewpager.InfiniteCyclePagerAdapter.OnNo
 class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
 
     // InfiniteCycleManager constants
-    private final static int MIN_CYCLE_COUNT = 3;
+    private final static int MIN_CYCLE_COUNT = 2;
     private final static int MIN_POINTER_COUNT = 1;
 
     // Default ViewPager constants and flags
@@ -125,7 +125,9 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
         @Override
         public void run() {
             if (!mIsAutoScroll) return;
-            mViewPageable.setCurrentItem(getRealItem() + (mIsAutoScrollPositive ? 1 : -1));
+            int position = getRealItem() + (mIsAutoScrollPositive ? 1 : -1);
+            System.out.println("---------------"+ position);
+            mViewPageable.setCurrentItem(position);
             mAutoScrollHandler.postDelayed(this, mScrollDuration);
         }
     };
@@ -332,7 +334,9 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
     public boolean onTouchEvent(final MotionEvent event) {
         if (mViewPageable.getAdapter() == null || mViewPageable.getAdapter().getCount() == 0)
             return false;
-        if (mIsAutoScroll || mIsInitialItem || mViewPageable.isFakeDragging()) return false;
+//        if (mIsAutoScroll || mIsInitialItem || mViewPageable.isFakeDragging()) return false;
+//        if (mIsInitialItem || mViewPageable.isFakeDragging()) return false;
+        System.out.println("------" + mIsAutoScroll + "/" + mIsInitialItem + "/" + mViewPageable.isFakeDragging());
         if (event.getPointerCount() > MIN_POINTER_COUNT || !mViewPageable.hasWindowFocus())
             event.setAction(MotionEvent.ACTION_UP);
         checkHitRect(event);
@@ -445,7 +449,8 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
             scroller.setAccessible(true);
             final InfiniteCycleScroller infiniteCycleScroller =
                     new InfiniteCycleScroller(mContext, mInterpolator);
-            infiniteCycleScroller.setDuration(mScrollDuration);
+//            infiniteCycleScroller.setDuration(mScrollDuration);
+            infiniteCycleScroller.setDuration(300);
             scroller.set(mViewPageable, infiniteCycleScroller);
         } catch (Exception e) {
             e.printStackTrace();
