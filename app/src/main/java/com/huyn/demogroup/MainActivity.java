@@ -9,8 +9,10 @@ import com.huyn.demogroup.anim.ThreeDRotateActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
+import com.huyn.demogroup.opengl.TutorialPartOne;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
+import com.huyn.demogroup.sensor.RotationVectorDemo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +60,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ThreeDRotateActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_rotatevector).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RotationVectorDemo.class));
+            }
+        });
+
+        /**
+         * opengl http://blog.csdn.net/column/details/apidemoopengl.html?&page=1
+         */
+
+        findViewById(R.id.click_opengl1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, TutorialPartOne.class));
             }
         });
     }

@@ -55,5 +55,19 @@
             android:layout_marginTop="10dip"
             android:text="RotateAnim" />
 
+        <Button
+            android:id="@+id/click_rotatevector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="RotateVectorDemo" />
+
+        <Button
+            android:id="@+id/click_opengl1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="Opengl One" />
+
     </LinearLayout>
 </ScrollView>
