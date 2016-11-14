@@ -45,6 +45,10 @@
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait"
             android:theme="@style/customTheme" />
+        <activity android:name=".paint.PaintShaderActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
         <activity android:name=".infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait"

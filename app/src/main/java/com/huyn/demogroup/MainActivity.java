@@ -10,6 +10,7 @@ import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
 import com.huyn.demogroup.opengl.TutorialPartOne;
+import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.sensor.RotationVectorDemo;
@@ -78,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, TutorialPartOne.class));
+            }
+        });
+
+        findViewById(R.id.click_paint_shader).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PaintShaderActivity.class));
             }
         });
     }
