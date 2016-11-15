@@ -49,4 +49,13 @@
         android:layout_height="wrap_content"
         android:text="to cardview"/>
 
+    <com.huyn.demogroup.paint.RadialView
+        android:layout_width="100dip"
+        android:layout_height="100dip" />
+
+    <View
+        android:layout_width="100dip"
+        android:layout_height="100dip"
+        android:background="@drawable/gradient_shape" />
+
 </LinearLayout>

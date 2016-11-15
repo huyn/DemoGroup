@@ -1,0 +1,29 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="12px"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/smallgoodsitem_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        android:paddingLeft="55dip"
+        android:text="卡地亚love系列18k金手镯"
+        android:textSize="14dip"
+        android:textColor="#000000"/>
+
+    <com.huyn.demogroup.anim.roundedimageview.RoundedImageView
+        android:id="@+id/smallgoodsitem_img"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_centerVertical="true"
+        android:scaleType="centerCrop"
+        app:riv_border_width="0dip"
+        app:riv_corner_radius="25dip"
+        app:riv_oval="true" />
+
+</RelativeLayout>

@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="white">#ffffff</color>
+
     <color name="picker_text_40">#282828</color>
     <color name="picker_text_80">#505050</color>
     <color name="picker_text_120">#787878</color>
