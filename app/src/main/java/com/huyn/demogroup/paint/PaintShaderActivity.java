@@ -42,8 +42,8 @@ public class PaintShaderActivity extends Activity {
         findViewById(R.id.to_cardview).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                startActivity(new Intent(PaintShaderActivity.this, CardViewActivity.class));
-                startActivity(new Intent(PaintShaderActivity.this, TestWebViewActivity.class));
+                startActivity(new Intent(PaintShaderActivity.this, CardViewActivity.class));
+//                startActivity(new Intent(PaintShaderActivity.this, TestWebViewActivity.class));
             }
         });
     }

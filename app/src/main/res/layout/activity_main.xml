@@ -76,6 +76,13 @@
             android:layout_marginTop="10dip"
             android:text="Paint Shader" />
 
+        <Button
+            android:id="@+id/click_particle_effects"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="Paint Shader" />
+
 
     </LinearLayout>
 </ScrollView>
