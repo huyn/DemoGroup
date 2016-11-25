@@ -21,24 +21,24 @@ public class CardViewActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        setContentView(R.layout.activity_card_top);
+        setContentView(R.layout.activity_card_top);
 
-        setContentView(R.layout.activity_card_relative);
-
-        mRelativeLayout = (RelativeLayout) findViewById(R.id.root);
-        add = findViewById(R.id.add);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                int pos = getPos();
-                generateParamsStyle(params, pos);
-                TextView textView = new TextView(CardViewActivity.this);
-                textView.setText("" + pos);
-                textView.setBackgroundColor(Color.RED);
-                mRelativeLayout.addView(textView, params);
-            }
-        });
+//        setContentView(R.layout.activity_card_relative);
+//
+//        mRelativeLayout = (RelativeLayout) findViewById(R.id.root);
+//        add = findViewById(R.id.add);
+//        add.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//                int pos = getPos();
+//                generateParamsStyle(params, pos);
+//                TextView textView = new TextView(CardViewActivity.this);
+//                textView.setText("" + pos);
+//                textView.setBackgroundColor(Color.RED);
+//                mRelativeLayout.addView(textView, params);
+//            }
+//        });
     }
 
     private int start = 1;

@@ -100,6 +100,8 @@ public class ExplosionAnimator extends ValueAnimator {
                 mPaint.setColor(particle.color);
                 mPaint.setAlpha((int) (Color.alpha(particle.color) * particle.alpha));
                 canvas.drawCircle(particle.cx, particle.cy, particle.radius, mPaint);
+
+//                draw5PointedStar(canvas, mPaint, particle.radius);
             }
         }
         mContainer.invalidate();
@@ -112,7 +114,7 @@ public class ExplosionAnimator extends ValueAnimator {
      * @param paint
      * @param radius
      */
-    private void draw5PointedStar(Canvas canvas, Paint paint, int radius) {
+    private void draw5PointedStar(Canvas canvas, Paint paint, float radius) {
         Path path = new Path();
         float radian = degree2Radian(36);// 36为五角星的角度
         float radius_in = (float) (radius * Math.sin(radian / 2) / Math

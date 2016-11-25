@@ -31,12 +31,12 @@ public class StripeCompoundLayout extends RelativeLayout {
     private Bitmap bitmap;
     private Shader shader;
 
+    private Paint mBorderPaint, mTopPaint;
+
     private Context mContext;
 
     private TextView mGoodsTitle;
     private ImageView mGoodsImg;
-
-    private Paint mBorderPaint, mTopPaint;
 
     public StripeCompoundLayout(Context context) {
         this(context, null);
@@ -105,7 +105,16 @@ public class StripeCompoundLayout extends RelativeLayout {
 
         mGoodsImg.setImageResource(R.drawable.cover);
         mGoodsTitle.setText("hello world");
+    }
 
+    public int getSize() {
+        return mGoodsImg.getWidth();
+    }
+
+    public int[] getPosition() {
+        int[] location = new int[2];
+        mGoodsImg.getLocationInWindow(location);
+        return location;
     }
 
 }
