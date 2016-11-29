@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.huyn.demogroup.anim.ThreeDRotateActivity;
+import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
@@ -94,6 +95,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ParticleEffectsActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_clipchildanim).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ClipChildAnimActivity.class));
             }
         });
     }

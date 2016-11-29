@@ -69,6 +69,10 @@
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait"
             android:theme="@style/customTheme" />
+        <activity android:name=".clipchild.ClipChildAnimActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
         <activity android:name=".paint.TestStripeAnimActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="landscape"
