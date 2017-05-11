@@ -13,6 +13,7 @@ import com.huyn.demogroup.opengl.TutorialPartOne;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.sensor.RotationVectorDemo;
+import com.huyn.demogroup.zoomageview.ZoomageViewActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,6 +68,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, RotationVectorDemo.class));
+            }
+        });
+
+        findViewById(R.id.click_zoomageview).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ZoomageViewActivity.class));
             }
         });
 
