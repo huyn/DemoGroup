@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item>
+        <shape android:shape="rectangle" >
+            <corners android:radius="10dip" />
+            <solid android:color="#ffffff" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle" >
+            <!-- 设置圆角半径 -->
+            <corners android:topLeftRadius="10dip"
+                android:topRightRadius="10dip"/>
+
+            <!-- 填充 -->
+            <!--<solid android:color="#ffa0a0a0" />-->
+            <stroke android:color="#ff000000" android:width="3px" />
+        </shape>
+    </item>
+    <item
+        android:left="3px"
+        android:right="3px"
+        android:top="10dip">
+        <shape android:shape="rectangle" >
+            <solid android:color="#ffffff" />
+        </shape>
+    </item>
+
+</layer-list>

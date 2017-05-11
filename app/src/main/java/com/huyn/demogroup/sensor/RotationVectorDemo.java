@@ -83,6 +83,7 @@ public class RotationVectorDemo extends Activity {
         private Cube mCube;
         private Sensor mRotationVectorSensor;
         private final float[] mRotationMatrix = new float[16];
+        public volatile float[] quat = {1,0,0,0};
 
         public MyRenderer() {
             // find the rotation-vector sensor
@@ -118,6 +119,8 @@ public class RotationVectorDemo extends Activity {
                 SensorManager.getRotationMatrixFromVector(
                         mRotationMatrix , event.values);
                 Matrix.rotateM(mRotationMatrix, 0, 90.0F, 1.0F, 0.0F, 0.0F);
+
+                SensorManager.getQuaternionFromVector(quat, event.values);
             }
         }
 
@@ -130,6 +133,9 @@ public class RotationVectorDemo extends Activity {
             gl.glLoadIdentity();
             gl.glTranslatef(0, 0, -3.0f);
             gl.glMultMatrixf(mRotationMatrix, 0);
+//            float axis = (float) (2.0f * Math.acos(quat[0]) * 180.0f / Math.PI);
+//            float offset = (float) Math.sin(axis/2);
+//            gl.glRotatef(axis, quat[1]/offset, quat[2]/offset, quat[3]/offset);
 
             // draw our object
             gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);

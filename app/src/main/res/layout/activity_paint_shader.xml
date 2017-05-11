@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/holo_red_dark">
+
+    <com.huyn.demogroup.paint.StripeView
+        android:layout_width="100dip"
+        android:layout_height="100dip" />
+
+    <com.huyn.demogroup.paint.ProgressView
+        android:id="@+id/progress_1"
+        android:layout_width="match_parent"
+        android:layout_height="10dip"
+        android:layout_margin="20dip"/>
+
+    <com.huyn.demogroup.paint.VSProgressView
+        android:id="@+id/progress_2"
+        android:layout_width="match_parent"
+        android:layout_height="10dip"
+        android:layout_margin="20dip"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <Button
+            android:id="@+id/btn_1"
+            android:text="ProgressAnim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip"/>
+
+        <Button
+            android:id="@+id/btn_2"
+            android:text="VSAnim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dip" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/to_cardview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="to cardview"/>
+
+    <com.huyn.demogroup.paint.RadialView
+        android:layout_width="100dip"
+        android:layout_height="100dip" />
+
+    <View
+        android:layout_width="100dip"
+        android:layout_height="100dip"
+        android:background="@drawable/gradient_shape" />
+
+</LinearLayout>

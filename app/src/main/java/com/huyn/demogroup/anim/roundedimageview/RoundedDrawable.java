@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -65,6 +66,8 @@ public class RoundedDrawable extends Drawable {
 
   // [ topLeft, topRight, bottomLeft, bottomRight ]
   private float mCornerRadius = 0f;
+  private boolean mUseOneRadius = true;
+  private float[] mCornerRadiusMap = new float[] { 0, 0, 0, 0 };
   private final boolean[] mCornersRounded = new boolean[] { true, true, true, true };
 
   private boolean mOval = false;
@@ -301,7 +304,11 @@ public class RoundedDrawable extends Drawable {
           redrawBitmapForSquareCorners(canvas);
           redrawBorderForSquareCorners(canvas);
         } else {
-          canvas.drawRoundRect(mDrawableRect, radius, radius, mBitmapPaint);
+          if(mUseOneRadius) {
+            canvas.drawRoundRect(mDrawableRect, radius, radius, mBitmapPaint);
+          } else {
+            drawPath(canvas);
+          }
           redrawBitmapForSquareCorners(canvas);
         }
       } else {
@@ -311,6 +318,37 @@ public class RoundedDrawable extends Drawable {
         }
       }
     }
+  }
+
+  private void drawPath(Canvas canvas) {
+    float left = mDrawableRect.left;
+    float top = mDrawableRect.top;
+    float right = left + mDrawableRect.width();
+    float bottom = top + mDrawableRect.height();
+
+    Path path = new Path();
+    path.moveTo(left, top+mCornerRadiusMap[0]);
+
+    RectF left_top = new RectF(left, top, left+2*mCornerRadiusMap[0], top+2*mCornerRadiusMap[0]);
+    path.arcTo(left_top, 180, 90);
+
+    path.lineTo(right - mCornerRadiusMap[1], top);
+
+    RectF right_top = new RectF(right-2*mCornerRadiusMap[1], top, right, top+2*mCornerRadiusMap[1]);
+    path.arcTo(right_top, -90, 90);
+
+    path.lineTo(right, bottom - mCornerRadiusMap[3]);
+
+    RectF right_bottom = new RectF(right-2*mCornerRadiusMap[3], bottom-2*mCornerRadiusMap[3], right, bottom);
+    path.arcTo(right_bottom, 0, 90);
+
+    path.lineTo(left + mCornerRadiusMap[2], bottom);
+
+    RectF left_bottom = new RectF(left, bottom-2*mCornerRadiusMap[2], left+2*mCornerRadiusMap[2], bottom);
+    path.arcTo(left_bottom, 90, 90);
+
+    path.close();
+    canvas.drawPath(path, mBitmapPaint);
   }
 
   private void redrawBitmapForSquareCorners(Canvas canvas) {
@@ -509,8 +547,14 @@ public class RoundedDrawable extends Drawable {
 
     radiusSet.remove(0f);
 
+    mUseOneRadius = true;
     if (radiusSet.size() > 1) {
-      throw new IllegalArgumentException("Multiple nonzero corner radii not yet supported.");
+//      throw new IllegalArgumentException("Multiple nonzero corner radii not yet supported.");
+      mUseOneRadius = false;
+      mCornerRadiusMap[0] = topLeft >= 0 ? topLeft : 0;
+      mCornerRadiusMap[1] = topRight >= 0 ? topRight : 0;
+      mCornerRadiusMap[2] = bottomLeft >= 0 ? bottomLeft : 0;
+      mCornerRadiusMap[3] = bottomRight >= 0 ? bottomRight : 0;
     }
 
     if (!radiusSet.isEmpty()) {

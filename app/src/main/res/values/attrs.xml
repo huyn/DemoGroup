@@ -29,4 +29,9 @@
         <attr name="icvp_interpolator"/>
     </declare-styleable>
 
+    <declare-styleable name="DashLineView">
+        <attr name="lineColor" format="integer" />
+        <attr name="patheffect" format="integer"/>
+    </declare-styleable>
+
 </resources>
