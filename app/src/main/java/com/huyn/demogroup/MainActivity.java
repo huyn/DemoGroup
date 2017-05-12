@@ -1,6 +1,8 @@
 package com.huyn.demogroup;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +19,8 @@ import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.sensor.RotationVectorDemo;
 import com.huyn.demogroup.zoomageview.ZoomageViewActivity;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -112,5 +116,30 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, ClipChildAnimActivity.class));
             }
         });
+
+        printCacheDirs();
     }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void printCacheDirs() {
+        System.out.println("getCacheDir++++" + getCacheDir().getPath());
+        System.out.println("getExternalCacheDir++++" + getExternalCacheDir().getPath());
+        System.out.println("getExternalCacheDirs++++");
+        File[] cacheDirs = getExternalCacheDirs();
+        if(cacheDirs != null && cacheDirs.length > 0) {
+            for(File file : cacheDirs) {
+                System.out.println("--" + file.getPath());
+            }
+        }
+        System.out.println("getFilesDir++++" + getFilesDir().getPath());
+        System.out.println("getExternalFilesDir++++" + getExternalFilesDir(null).getPath());
+        System.out.println("getExternalFilesDirs++++");
+        cacheDirs = getExternalFilesDirs(null);
+        if(cacheDirs != null && cacheDirs.length > 0) {
+            for(File file : cacheDirs) {
+                System.out.println("--" + file.getPath());
+            }
+        }
+    }
+
 }
