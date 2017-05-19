@@ -15,7 +15,7 @@
  *******************************************************************************/
 package com.huyn.demogroup.zoomageview.view;
 
-interface OnGestureListener {
+public interface OnGestureListener {
 
     void onDrag(float dx, float dy);
 

@@ -3,9 +3,9 @@ package com.huyn.demogroup.zoomageview.view;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
-class Util {
+public class Util {
 
-    static void checkZoomLevels(float minZoom, float midZoom,
+    public static void checkZoomLevels(float minZoom, float midZoom,
                                 float maxZoom) {
         if (minZoom >= midZoom) {
             throw new IllegalArgumentException(
@@ -16,11 +16,11 @@ class Util {
         }
     }
 
-    static boolean hasDrawable(ImageView imageView) {
+    public static boolean hasDrawable(ImageView imageView) {
         return imageView.getDrawable() != null;
     }
 
-    static boolean isSupportedScaleType(final ImageView.ScaleType scaleType) {
+    public static boolean isSupportedScaleType(final ImageView.ScaleType scaleType) {
         if (scaleType == null) {
             return false;
         }

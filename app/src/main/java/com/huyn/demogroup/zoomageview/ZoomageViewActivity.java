@@ -7,10 +7,13 @@ import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.huyn.demogroup.R;
 
 /**
@@ -19,7 +22,8 @@ import com.huyn.demogroup.R;
 
 public class ZoomageViewActivity extends Activity implements View.OnClickListener {
 
-    private ImageView left, right, placeholder;
+    private ImageView left, right;
+    private SubsamplingScaleImageView placeholder;
     private View mRoot;
 
     @Override
@@ -32,7 +36,7 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
 
         left = (ImageView) findViewById(R.id.left);
         right = (ImageView) findViewById(R.id.right);
-        placeholder = (ImageView) findViewById(R.id.placeholder);
+        placeholder = (SubsamplingScaleImageView) findViewById(R.id.placeholder);
 
         left.setOnClickListener(this);
         right.setOnClickListener(this);
@@ -52,6 +56,17 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
         }
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            if(placeholder.getVisibility() == View.VISIBLE) {
+                dismiss();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     private float getRatio(View view) {
         if(view == left)
             return 640f/1024;
@@ -64,9 +79,9 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
         return R.drawable.bk_gallery_lightoff;
     }
 
-    private int srcW, srcH;
+    private int srcW, srcH, targetW, targetH;
     private Rect mSrcRect;
-    private int ANIM_DURATION = 500;
+    private int ANIM_DURATION = 2000;
     private void preview(View view) {
         srcW = view.getWidth();
         srcH = view.getHeight();
@@ -77,12 +92,20 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
         final int mBigW = isLong ? (int) (mRoot.getHeight() / sizeRatio) : mRoot.getWidth();
         final int mBigH = isLong ? mRoot.getHeight() : (int) (mBigW * sizeRatio);
 
+        targetW = mBigW;
+        targetH = mBigH;
+
         int[] position = new int[2];
+        mRoot.getLocationInWindow(position);
+        int rootY = position[1];
         view.getLocationInWindow(position);
-        int y = position[1];
+        int y = position[1] - rootY;
         int x = position[0];
 
-        placeholder.setImageResource(getResId(view));
+        //placeholder.setImageResource(getResId(view));
+        placeholder.setImage(ImageSource.resource(getResId(view)));
+        placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_CROP);
+        placeholder.reverse(false);
 
         mSrcRect = new Rect();
         mSrcRect.left = x;
@@ -120,6 +143,13 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE);
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
+                params.width = mRoot.getWidth();
+                params.height = mRoot.getHeight();
+                placeholder.setLayoutParams(params);
+                placeholder.setTranslationX(0);
+                placeholder.setTranslationY(0);
             }
 
             @Override
@@ -132,14 +162,22 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
     }
 
     private void dismiss() {
-        final int mBigH = placeholder.getHeight();
-        final int mBigW = placeholder.getWidth();
-        final int dy = (mRoot.getHeight() - mBigH) / 2;
-        final int dx = (mRoot.getWidth() - mBigW)/2;
+        final int dy = (mRoot.getHeight() - targetH) / 2;
+        final int dx = (mRoot.getWidth() - targetW)/2;
 
         final float fx = mSrcRect.left;
         final float fy = mSrcRect.top;
 
+        placeholder.reverse(true);
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
+        params.width = srcW;
+        params.height = srcH;
+        placeholder.setLayoutParams(params);
+        placeholder.setTranslationX(dx);
+        placeholder.setTranslationY(dy);
+
+        placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_CROP);
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(ANIM_DURATION);
@@ -151,8 +189,8 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
                 float tx = dx + (fx - dx)*value;
                 float ty = dy + (fy - dy)*value;
 
-                int width = (int) (mBigW + (srcW-mBigW)*value);
-                int height = (int) (mBigH + (srcH-mBigH)*value);
+                int width = (int) (targetW + (srcW-targetW)*value);
+                int height = (int) (targetH + (srcH-targetH)*value);
 
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
                 params.width = width;
