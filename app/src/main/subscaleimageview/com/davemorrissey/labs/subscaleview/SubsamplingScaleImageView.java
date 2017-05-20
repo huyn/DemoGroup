@@ -16,6 +16,9 @@ limitations under the License.
 
 package com.davemorrissey.labs.subscaleview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -47,6 +50,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import android.widget.FrameLayout;
 
 import com.davemorrissey.labs.subscaleview.decoder.CompatDecoderFactory;
 import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
@@ -282,6 +286,7 @@ public class SubsamplingScaleImageView extends View {
     //The logical density of the display
     private float density;
 
+    private OnPullStateListener mPullStateListener;
 
     public SubsamplingScaleImageView(Context context, AttributeSet attr) {
         super(context, attr);
@@ -453,7 +458,7 @@ public class SubsamplingScaleImageView extends View {
     /**
      * Reset all state before setting/changing image or setting new rotation.
      */
-    private void reset(boolean newImage) {
+    public void reset(boolean newImage) {
         debug("reset newImage=" + newImage);
         scale = 0f;
         scaleStart = 0f;
@@ -524,7 +529,7 @@ public class SubsamplingScaleImageView extends View {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (panEnabled && readySent && vTranslate != null && e1 != null && e2 != null && (Math.abs(e1.getX() - e2.getX()) > 50 || Math.abs(e1.getY() - e2.getY()) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500) && !isZooming) {
+                if (!mDragMode && panEnabled && readySent && vTranslate != null && e1 != null && e2 != null && (Math.abs(e1.getX() - e2.getX()) > 50 || Math.abs(e1.getY() - e2.getY()) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500) && !isZooming) {
                     PointF vTranslateEnd = new PointF(vTranslate.x + (velocityX * 0.25f), vTranslate.y + (velocityY * 0.25f));
                     float sCenterXEnd = ((getWidth()/2) - vTranslateEnd.x)/scale;
                     float sCenterYEnd = ((getHeight()/2) - vTranslateEnd.y)/scale;
@@ -579,8 +584,9 @@ public class SubsamplingScaleImageView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         debug("onSizeChanged %dx%d -> %dx%d", oldw, oldh, w, h);
         PointF sCenter = getCenter();
+        if(sCenter != null)
+            debug("onSizeChanged get new center..." + sCenter.x + "/" + sCenter.y);
         if (readySent && sCenter != null) {
-            debug("resize...");
             this.anim = null;
             this.pendingScale = scale;
             this.sPendingCenter = sCenter;
@@ -661,6 +667,11 @@ public class SubsamplingScaleImageView extends View {
         return handled || super.onTouchEvent(event);
     }
 
+    private float mTouchDownX=-1, mTouchDownY=-1;
+    private PointF mTouchDownTranslate;
+    private float mTouchDownScale=0;
+    private boolean mDragMode = false;
+
     @SuppressWarnings("deprecation")
     private boolean onTouchEventInternal(@NonNull MotionEvent event) {
         int touchCount = event.getPointerCount();
@@ -697,7 +708,7 @@ public class SubsamplingScaleImageView extends View {
             case MotionEvent.ACTION_MOVE:
                 boolean consumed = false;
                 if (maxTouchCount > 0) {
-                    if (touchCount >= 2) {
+                    if (touchCount >= 2 && !mDragMode) {
                         // Calculate new distance between touch points, to scale and pan relative to start values.
                         float vDistEnd = distance(event.getX(0), event.getX(1), event.getY(0), event.getY(1));
                         float vCenterEndX = (event.getX(0) + event.getX(1))/2;
@@ -804,19 +815,46 @@ public class SubsamplingScaleImageView extends View {
                     } else if (!isZooming) {
                         // One finger pan - translate the image. We do this calculation even with pan disabled so click
                         // and long click behaviour is preserved.
-                        float dx = Math.abs(event.getX() - vCenterStart.x);
-                        float dy = Math.abs(event.getY() - vCenterStart.y);
+                        float dx = Math.abs(event.getX(0) - vCenterStart.x);
+                        float dy = Math.abs(event.getY(0) - vCenterStart.y);
 
                         //On the Samsung S6 long click event does not work, because the dx > 5 usually true
                         float offset = density * 5;
                         if (dx > offset || dy > offset || isPanning) {
                             consumed = true;
-                            vTranslate.x = vTranslateStart.x + (event.getX() - vCenterStart.x);
-                            vTranslate.y = vTranslateStart.y + (event.getY() - vCenterStart.y);
+
+                            if(mTouchDownX < 0 || mTouchDownY < 0) {
+                                mTouchDownX = event.getX(0);
+                                mTouchDownY = event.getY(0);
+                                mTouchDownTranslate = new PointF(vTranslate.x, vTranslate.y);
+                                mTouchDownScale = getScale();
+                                debug("ontouch origin x:" + mTouchDownX + "_" + event.getX(0) + "/y:" + mTouchDownY + "_" + event.getY(0));
+                            }
+
+                            vTranslate.x = vTranslateStart.x + (event.getX(0) - vCenterStart.x);
+                            vTranslate.y = vTranslateStart.y + (event.getY(0) - vCenterStart.y);
+
+                            debug("ontouch move...x:" + vTranslate.x + "__y:" + vTranslate.y);
+                            debug("ontouch move...scale:" + getScale() + "/minscale:" + getMinScale() + "/" + minScale() + "-" + minScale);
 
                             float lastX = vTranslate.x;
                             float lastY = vTranslate.y;
-                            fitToBounds(true);
+                            if(getScale() > minScale()) {
+                                fitToBounds(true);
+                            } else {
+                                mDragMode = true;
+                                if(event.getY(0) > mTouchDownY) {
+                                    float value = Math.abs(event.getY(0) - mTouchDownY)/400f;
+                                    if(value > 1)
+                                        value = 1;
+                                    if(mPullStateListener != null)
+                                        mPullStateListener.onPull(value);
+                                    scale = mTouchDownScale + (0.5f - mTouchDownScale) * value;
+                                    debug("ontouch move...new scale:" + scale);
+                                } else {
+                                    scale = mTouchDownScale;
+                                }
+                            }
                             boolean atXEdge = lastX != vTranslate.x;
                             boolean atYEdge = lastY != vTranslate.y;
                             boolean edgeXSwipe = atXEdge && dx > dy && !isPanning;
@@ -824,16 +862,19 @@ public class SubsamplingScaleImageView extends View {
                             boolean yPan = lastY == vTranslate.y && dy > offset * 3;
                             if (!edgeXSwipe && !edgeYSwipe && (!atXEdge || !atYEdge || yPan || isPanning)) {
                                 isPanning = true;
+                                debug("ontouch move...ispanning");
                             } else if (dx > offset || dy > offset) {
                                 // Haven't panned the image, and we're at the left or right edge. Switch to page swipe.
-                                maxTouchCount = 0;
+                                //maxTouchCount = 0;
                                 handler.removeMessages(MESSAGE_LONG_CLICK);
-                                requestDisallowInterceptTouchEvent(false);
+                                //requestDisallowInterceptTouchEvent(false);
+                                debug("ontouch move...>offset");
                             } 
                             if (!panEnabled) {
                                 vTranslate.x = vTranslateStart.x;
                                 vTranslate.y = vTranslateStart.y;
                                 requestDisallowInterceptTouchEvent(false);
+                                debug("ontouch move...!panEnabled");
                             }
 
                             refreshRequiredTiles(false);
@@ -849,6 +890,11 @@ public class SubsamplingScaleImageView extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_POINTER_2_UP:
+                //mDragMode = false;
+                if(mDragMode)
+                    releaseDrag();
+                mTouchDownY=-1;
+                mTouchDownX=-1;
                 handler.removeMessages(MESSAGE_LONG_CLICK);
                 if (isQuickScaling) {
                     isQuickScaling = false;
@@ -888,6 +934,98 @@ public class SubsamplingScaleImageView extends View {
                 return true;
         }
         return false;
+    }
+
+    public void setOnPullStateListener(OnPullStateListener listener) {
+        mPullStateListener = listener;
+    }
+
+    private void releaseDrag() {
+        if(scale == 0.5f) {
+            releaseToExit();
+        } else {
+            releaseToReverse();
+        }
+    }
+
+    private void releaseToExit() {
+        debug("releaseToExit..." + vTranslate.x + "/" + vTranslate.y + "______" + sWidth + "/" + sHeight);
+        final float width = scale*sWidth();
+        final float height = scale*sHeight();
+        final float startX = vTranslate.x;
+        final float startY = vTranslate.y;
+        //change layout and translation value, then execute anim
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+        params.width = (int) (width);//(int) ((getWidth() - 2 * mTouchDownTranslate.x)*scale);
+        params.height = (int) (height);//(int) ((getHeight() - 2 * mTouchDownTranslate.y) *scale);
+        setLayoutParams(params);
+        setTranslationX(startX);
+        setTranslationY(startY);
+        setMinimumScaleType(SCALE_TYPE_CENTER_CROP);
+        mDragMode = false;
+        //setTranslationX and setTranslationY not work
+        /*if(mPullStateListener != null) {
+            mPullStateListener.onReleaseToExit(scale*sWidth(), scale*sHeight(), new PointF(vTranslate.x, vTranslate.y), new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mDragMode = false;
+                }
+            });
+            mDragMode = false;
+        }*/
+        reverse(true);
+        final int[] results = mPullStateListener.getSrcParams();
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                //setTranslationX(startX*(1-value));
+                //setTranslationY(startY*(1-value));
+                float tx = startX + (results[0] - startX)*value;
+                float ty = startY + (results[1] - startY)*value;
+
+                int w = (int) (width + (results[2]-width)*value);
+                int h = (int) (height + (results[3]-height)*value);
+
+                System.out.println("+++++++++++++++++++++++++++++++++++++++" + w + "/" + h + "__" + tx + "/" + ty);
+
+                FrameLayout.LayoutParams param = (FrameLayout.LayoutParams) getLayoutParams();
+                param.width = w;
+                param.height = h;
+                setLayoutParams(param);
+                setTranslationX(tx);
+                setTranslationY(ty);
+            }
+        });
+        animator.setDuration(4000);
+        animator.start();
+    }
+
+    private void releaseToReverse() {
+        final float originScale = scale;
+        final PointF originTranslate = new PointF(vTranslate.x, vTranslate.y);
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                scale = originScale + (mTouchDownScale - originScale) * value;
+                vTranslate.x = originTranslate.x + (mTouchDownTranslate.x - originTranslate.x) * value;
+                vTranslate.y = originTranslate.y + (mTouchDownTranslate.y - originTranslate.y) * value;
+                if(mPullStateListener != null)
+                    mPullStateListener.onPull(1-value);
+                invalidate();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mDragMode = false;
+            }
+        });
+        animator.setDuration(300);
+        animator.start();
     }
 
     private void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
@@ -1066,6 +1204,8 @@ public class SubsamplingScaleImageView extends View {
             } else if (getRequiredRotation() == ORIENTATION_270) {
                 matrix.postTranslate(0, scale * sWidth);
             }
+
+            debug("draw..........." + scale + "___x:" + vTranslate.x + "/" + vTranslate.y);
 
             if (tileBgPaint != null) {
                 if (sRect == null) { sRect = new RectF(); }
@@ -1307,18 +1447,21 @@ public class SubsamplingScaleImageView extends View {
         // If waiting to translate to new center position, set translate now
         if (sPendingCenter != null && pendingScale != null) {
             scale = pendingScale;
-            debug("predraw..." + scale);
             if (vTranslate == null) {
                 vTranslate = new PointF();
             }
             vTranslate.x = (getWidth()/2) - (scale * sPendingCenter.x);
             vTranslate.y = (getHeight()/2) - (scale * sPendingCenter.y);
+            debug("predraw reset x:" + vTranslate.x + "_y:" + vTranslate.y);
             sPendingCenter = null;
             pendingScale = null;
             fitToBounds(true);
             refreshRequiredTiles(true);
         }
 
+        if(getMinScale() > scale && vTranslate != null)// && !mDragMode)
+            return;
+        debug("fitToBounds from predraw..." + mDragMode);
         // On first display of base image set up position, and in other cases make sure scale is correct.
         fitToBounds(false);
     }
@@ -1380,25 +1523,24 @@ public class SubsamplingScaleImageView extends View {
         float scaleWidth = scale * sWidth();
         float scaleHeight = scale * sHeight();
 
-        debug("fitToBounds translate preprocess : " + getWidth() + "/" + getHeight() + "///" + scaleWidth + "/" + scaleHeight);
+        debug("fitToBounds translate preprocess : x:" + sat.vTranslate.x + "_y:" + sat.vTranslate.y + "____w:" + getWidth() + "__h:" + getHeight() + "___________w:" + scaleWidth + "__h:" + scaleHeight);
 
         if(reverse) {
             vTranslate.x = Math.min(vTranslate.x, (getWidth() - scaleWidth)/2);
             vTranslate.y = Math.min(vTranslate.y, (getHeight() - scaleHeight)/2);
         } else {
-
             if (panLimit == PAN_LIMIT_CENTER && isReady()) {
                 vTranslate.x = Math.max(vTranslate.x, getWidth() / 2 - scaleWidth);
                 vTranslate.y = Math.max(vTranslate.y, getHeight() / 2 - scaleHeight);
-                debug("fitToBounds translate origin 1111: " + vTranslate.x + "/" + (getWidth() / 2 - scaleWidth) + "___" + vTranslate.y + "/" + (getHeight() / 2 - scaleHeight));
+                debug("fitToBounds translate origin 1111: x:" + vTranslate.x + "__newx:" + (getWidth() / 2 - scaleWidth) + "___y:" + vTranslate.y + "__newy:" + (getHeight() / 2 - scaleHeight));
             } else if (center) {
-                vTranslate.x = Math.max(vTranslate.x, getWidth() - scaleWidth);
+                vTranslate.x = Math.max(vTranslate.x, (getWidth() - scaleWidth)/2);
                 vTranslate.y = Math.max(vTranslate.y, getHeight() - scaleHeight);
-                debug("fitToBounds translate origin 2222: " + vTranslate.x + "/" + (getWidth() - scaleWidth) + "___" + vTranslate.y + "/" + (getHeight() - scaleHeight));
+                debug("fitToBounds translate origin 2222: x:" + vTranslate.x + "__newx:" + (getWidth() - scaleWidth)/2 + "__y:" + vTranslate.y + "__newy:" + (getHeight() - scaleHeight));
             } else {
                 vTranslate.x = Math.max(vTranslate.x, -scaleWidth);
                 vTranslate.y = Math.max(vTranslate.y, -scaleHeight);
-                debug("fitToBounds translate origin 3333: " + vTranslate.x + "/" + (-scaleWidth) + "___" + vTranslate.y + "/" + (-scaleHeight));
+                debug("fitToBounds translate origin 3333: x:" + vTranslate.x + "__newx:" + (-scaleWidth) + "___y:" + vTranslate.y + "__newy:" + (-scaleHeight));
             }
 
             // Asymmetric padding adjustments
@@ -1418,13 +1560,14 @@ public class SubsamplingScaleImageView extends View {
                 maxTy = Math.max(0, getHeight());
             }
 
-            debug("fitToBounds translate origin: " + vTranslate.x + "/" + maxTx + "___" + vTranslate.y + "/" + maxTy);
+            debug("fitToBounds translate origin: x:" + vTranslate.x + "__mx:" + maxTx + "___y:" + vTranslate.y + "__my" + maxTy);
             vTranslate.x = Math.min(vTranslate.x, maxTx);
             vTranslate.y = Math.min(vTranslate.y, maxTy);
         }
 
         sat.scale = scale;
-        debug("fitToBounds reset scale: " + scale + "/////" +  vTranslate.x + "/" + vTranslate.y);
+        debug("fitToBounds reset scale: " + scale + "___________x:" +  vTranslate.x + "___y:" + vTranslate.y);
+        debug("fitToBounds__________________________________________________________");
     }
 
     /**
@@ -1443,6 +1586,7 @@ public class SubsamplingScaleImageView extends View {
         }
         satTemp.scale = scale;
         satTemp.vTranslate.set(vTranslate);
+        debug("fitToBounds......................................x:" + vTranslate.x + "__y:" + vTranslate.y);
         fitToBounds(center, satTemp);
         scale = satTemp.scale;
         if(reverse)
@@ -2070,6 +2214,7 @@ public class SubsamplingScaleImageView extends View {
             return null;
         }
         sTarget.set(viewToSourceX(vx), viewToSourceY(vy));
+        debug("viewToSourceCoord________vx:" + vx + "/vy:" + vy + "____result:" + sTarget.x + "_" + sTarget.y);
         return sTarget;
     }
 
@@ -2147,6 +2292,7 @@ public class SubsamplingScaleImageView extends View {
         }
         satTemp.scale = scale;
         satTemp.vTranslate.set(vxCenter - (sCenterX * scale), vyCenter - (sCenterY * scale));
+        debug("vTranslateForSCenter >>>>>>>>>>>>>>>>>>>>>>>>>x:" + satTemp.vTranslate.x + "/" + satTemp.vTranslate.y);
         fitToBounds(true, satTemp);
         return satTemp.vTranslate;
     }
@@ -2159,6 +2305,7 @@ public class SubsamplingScaleImageView extends View {
         }
         satTemp.scale = scale;
         satTemp.vTranslate.set(vxTopLeft, vyTopLeft);
+        debug("vTranslateForCenterCrop >>>>>>>>>>>>>>>>>>>>>>>>>");
         fitToBounds(true, satTemp);
         return satTemp.vTranslate;
     }
@@ -2194,14 +2341,21 @@ public class SubsamplingScaleImageView extends View {
     }
 
     private boolean reverse = false;
+    private boolean animToScale = false;
     public void reverse(boolean doreverse) {
         reverse = doreverse;
+    }
+
+    public void animToScale(boolean animToScale) {
+        this.animToScale = animToScale;
     }
 
     /**
      * Adjust a requested scale to be within the allowed limits.
      */
     private float limitedScale(float targetScale) {
+        if(mDragMode)
+            return targetScale;
         if(reverse)
             return minScale();
         targetScale = Math.max(minScale(), targetScale);
@@ -2266,7 +2420,7 @@ public class SubsamplingScaleImageView extends View {
     @AnyThread
     private void debug(String message, Object... args) {
         if (debug) {
-            Log.d(TAG, String.format(message, args));
+            Log.i(TAG, String.format(message, args));
         }
     }
 
@@ -2331,6 +2485,7 @@ public class SubsamplingScaleImageView extends View {
         }
         this.panLimit = panLimit;
         if (isReady()) {
+            debug("fitToBounds from setPanLimit");
             fitToBounds(true);
             invalidate();
         }
@@ -2345,6 +2500,7 @@ public class SubsamplingScaleImageView extends View {
         }
         this.minimumScaleType = scaleType;
         if (isReady()) {
+            debug("fitToBounds from setMinimumScaleType");
             fitToBounds(true);
             invalidate();
         }

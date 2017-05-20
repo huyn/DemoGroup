@@ -1,19 +1,13 @@
 package com.huyn.demogroup.zoomageview;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageViewWrapper;
 import com.huyn.demogroup.R;
 
 /**
@@ -23,7 +17,7 @@ import com.huyn.demogroup.R;
 public class ZoomageViewActivity extends Activity implements View.OnClickListener {
 
     private ImageView left, right;
-    private SubsamplingScaleImageView placeholder;
+    private SubsamplingScaleImageViewWrapper placeholder;
     private View mRoot;
 
     @Override
@@ -36,7 +30,8 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
 
         left = (ImageView) findViewById(R.id.left);
         right = (ImageView) findViewById(R.id.right);
-        placeholder = (SubsamplingScaleImageView) findViewById(R.id.placeholder);
+        placeholder = (SubsamplingScaleImageViewWrapper) findViewById(R.id.placeholder);
+        placeholder.attachRoot(mRoot);
 
         left.setOnClickListener(this);
         right.setOnClickListener(this);
@@ -48,10 +43,10 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
         switch (v.getId()) {
             case R.id.left:
             case R.id.right:
-                preview(v);
+                placeholder.preview(v);
                 break;
             case R.id.placeholder:
-                dismiss();
+                placeholder.dismiss();
                 break;
         }
     }
@@ -60,158 +55,11 @@ public class ZoomageViewActivity extends Activity implements View.OnClickListene
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_BACK) {
             if(placeholder.getVisibility() == View.VISIBLE) {
-                dismiss();
+                placeholder.dismiss();
                 return true;
             }
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    private float getRatio(View view) {
-        if(view == left)
-            return 640f/1024;
-        return 1334f/750;
-    }
-
-    private int getResId(View view) {
-        if(view == left)
-            return R.drawable.wallpaper;
-        return R.drawable.bk_gallery_lightoff;
-    }
-
-    private int srcW, srcH, targetW, targetH;
-    private Rect mSrcRect;
-    private int ANIM_DURATION = 2000;
-    private void preview(View view) {
-        srcW = view.getWidth();
-        srcH = view.getHeight();
-
-        float sizeRatio = getRatio(view);
-        boolean isLong = sizeRatio > (mRoot.getHeight()*1f/mRoot.getWidth());
-
-        final int mBigW = isLong ? (int) (mRoot.getHeight() / sizeRatio) : mRoot.getWidth();
-        final int mBigH = isLong ? mRoot.getHeight() : (int) (mBigW * sizeRatio);
-
-        targetW = mBigW;
-        targetH = mBigH;
-
-        int[] position = new int[2];
-        mRoot.getLocationInWindow(position);
-        int rootY = position[1];
-        view.getLocationInWindow(position);
-        int y = position[1] - rootY;
-        int x = position[0];
-
-        //placeholder.setImageResource(getResId(view));
-        placeholder.setImage(ImageSource.resource(getResId(view)));
-        placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_CROP);
-        placeholder.reverse(false);
-
-        mSrcRect = new Rect();
-        mSrcRect.left = x;
-        mSrcRect.top = y;
-        mSrcRect.right = x + view.getWidth();
-        mSrcRect.bottom = y + view.getHeight();
-
-        final int dy = (mRoot.getHeight() - mBigH) / 2;
-        final int dx = (mRoot.getWidth() - mBigW)/2;
-
-        final float fx = x;
-        final float fy = y;
-
-        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(ANIM_DURATION);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-
-                float tx = fx + (dx - fx)*value;
-                float ty = fy + (dy - fy)*value;
-
-                int width = (int) (srcW + (mBigW-srcW)*value);
-                int height = (int) (srcH + (mBigH-srcH)*value);
-
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
-                params.width = width;
-                params.height = height;
-                placeholder.setLayoutParams(params);
-                placeholder.setTranslationX(tx);
-                placeholder.setTranslationY(ty);
-            }
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE);
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
-                params.width = mRoot.getWidth();
-                params.height = mRoot.getHeight();
-                placeholder.setLayoutParams(params);
-                placeholder.setTranslationX(0);
-                placeholder.setTranslationY(0);
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-                placeholder.setVisibility(View.VISIBLE);
-                //showPreviewBottoom();
-            }
-        });
-        animator.start();
-    }
-
-    private void dismiss() {
-        final int dy = (mRoot.getHeight() - targetH) / 2;
-        final int dx = (mRoot.getWidth() - targetW)/2;
-
-        final float fx = mSrcRect.left;
-        final float fy = mSrcRect.top;
-
-        placeholder.reverse(true);
-
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
-        params.width = srcW;
-        params.height = srcH;
-        placeholder.setLayoutParams(params);
-        placeholder.setTranslationX(dx);
-        placeholder.setTranslationY(dy);
-
-        placeholder.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_CROP);
-
-        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(ANIM_DURATION);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-
-                float tx = dx + (fx - dx)*value;
-                float ty = dy + (fy - dy)*value;
-
-                int width = (int) (targetW + (srcW-targetW)*value);
-                int height = (int) (targetH + (srcH-targetH)*value);
-
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) placeholder.getLayoutParams();
-                params.width = width;
-                params.height = height;
-                placeholder.setLayoutParams(params);
-                placeholder.setTranslationX(tx);
-                placeholder.setTranslationY(ty);
-            }
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                placeholder.setVisibility(View.GONE);
-                //hidePreviewBottoom();
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
-        });
-        animator.start();
     }
 
 }

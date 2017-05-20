@@ -15,9 +15,16 @@
         tools:context="com.huyn.demogroup.MainActivity">
 
         <Button
+            android:id="@+id/click_zoomageview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ZoomageView" />
+
+        <Button
             android:id="@+id/click_relativetop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
             android:text="RelativeTop" />
 
         <Button
@@ -89,13 +96,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
             android:text="CLIP CHILD" />
-
-        <Button
-            android:id="@+id/click_zoomageview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dip"
-            android:text="ZoomageView" />
 
     </LinearLayout>
 </ScrollView>
