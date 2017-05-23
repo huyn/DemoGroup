@@ -75,32 +75,45 @@ public class ImgProcessor {
             int[] pixels = new int[size];
             for (int i=0; i < size; i++) {
                 int alpha = 0xff000000;
-                int gradient = i%width;
-                int colum = i/width;
-                /*if(gradient < 40)
-                    alpha = 0x00000000;
-                else if(gradient < 80)
-                    alpha = 0x20000000;
-                else if(gradient < 120)
-                    alpha = 0x40000000;
-                else if(gradient< 160)
-                    alpha = 0x60000000;
-                else if(gradient<200)
-                    alpha = 0x80000000;
-                else if(gradient<240)
-                    alpha = 0xa0000000;
-                else if(gradient<280)
-                    alpha = 0xc0000000;
-                else if(gradient<320)
-                    alpha = 0xe0000000;
-                else
-                    alpha = 0xff000000;*/
-                if(gradient < 200)
+                int x = i%width;
+                int y = i/width;
+
+                //if(x > padding && x < width-padding && y > padding && y < height - padding)
+                //    continue;
+
+                int gradient=0;
+                if(x <= padding) {
+                    if(y <= padding) {
+                        gradient = Math.max(x, y);
+                    } else if(y >= height-padding) {
+                        gradient = Math.max(x, height-y);
+                    } else {
+                        gradient = x;
+                    }
+                } else if(x >= width - padding) {
+                    if(y <= padding) {
+                        gradient = Math.max(width-x, y);
+                    } else if(y >= height-padding) {
+                        gradient = Math.max(width-x, height-y);
+                    } else {
+                        gradient = width-x;
+                    }
+                } else {
+                    if(y <= padding) {
+                        gradient = y;
+                    } else {
+                        gradient = height-y;
+                    }
+                }
+
+                /*if(gradient < 200)
                 alpha = (int) (gradient*255f/200) << 24;
                 if(gradient > width-400)
                     alpha = (int) ((width-gradient)*255f/400) << 24;
                 if(colum < 200 || colum > height-200)
-                    alpha = (int) (colum*255f/200) << 24;
+                    alpha = (int) (colum*255f/200) << 24;*/
+                //alpha = (int) (gradient * 255f / padding);
+                //alpha = alpha << 24;
                 pixels[i] = alpha | ((R[i] & 0xff) << 16) | ((G[i] & 0xff) << 8) | B[i] & 0xff;
             }
 
@@ -108,6 +121,7 @@ public class ImgProcessor {
         }
 
         private void parse(int[] input) {
+            padding=50;
             int value;
             System.out.println(input.length + "+++++++" + (input.length%width) + "--" + (input.length/width));
             for (int i=0; i < input.length; i++) {
@@ -122,7 +136,32 @@ public class ImgProcessor {
 //                if(x > width-padding)
 //                    alpha = (int) ((width-x)*255f/padding) << 24;
 
-                if(y < padding && x > padding && x < width-padding) {
+                int gradient=0;
+                if(x <= padding) {
+                    if(y <= padding) {
+                        gradient = Math.min(x, y);
+                    } else if(y >= height-padding) {
+                        gradient = Math.min(x, height-y);
+                    } else {
+                        gradient = x;
+                    }
+                } else if(x >= width - padding) {
+                    if(y <= padding) {
+                        gradient = Math.min(width-x, y);
+                    } else if(y >= height-padding) {
+                        gradient = Math.min(width-x, height-y);
+                    } else {
+                        gradient = width-x;
+                    }
+                } else {
+                    if(y <= padding) {
+                        gradient = y;
+                    } else {
+                        gradient = height-y;
+                    }
+                }
+
+                /*if(y < padding && x > padding && x < width-padding) {
                     alpha = (int) (y * 255f / padding);
                     //System.out.println("---------x:" + x + "/y:" + y + "++++" + alpha);
                     alpha = alpha << 24;
@@ -132,8 +171,9 @@ public class ImgProcessor {
                     alpha = (int) ((height - y) * 255f / padding);
                     //System.out.println("---------x:" + x + "/y:" + y + "++++" + alpha);
                     alpha = alpha << 24;
-                }
-
+                }*/
+                alpha = (int) (gradient * 255f / padding);
+                alpha = alpha << 24;
                 value =  input[i] & 0x00ffffff;
                 input[i] = alpha | value;
             }

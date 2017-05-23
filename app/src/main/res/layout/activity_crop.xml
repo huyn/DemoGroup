@@ -8,11 +8,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/wallpaper" />
+        android:src="@drawable/cover" />
 
     <com.huyn.demogroup.crop.CropRectView
         android:id="@+id/cropview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/do_crop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:padding="10dip"
+        android:text="CROP"
+        android:layout_gravity="bottom|center_horizontal" />
+
+    <ImageView
+        android:id="@+id/result"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
 
 </FrameLayout>

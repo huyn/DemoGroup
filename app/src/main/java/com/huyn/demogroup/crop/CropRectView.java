@@ -24,8 +24,8 @@ public class CropRectView extends View {
 
     public static final boolean DEFAULT_SHOW_CROP_FRAME = true;
     public static final boolean DEFAULT_SHOW_CROP_GRID = true;
-    public static final int DEFAULT_CROP_GRID_ROW_COUNT = 2;
-    public static final int DEFAULT_CROP_GRID_COLUMN_COUNT = 2;
+    public static final int DEFAULT_CROP_GRID_ROW_COUNT = 0;
+    public static final int DEFAULT_CROP_GRID_COLUMN_COUNT = 0;
 
     private final RectF mCropViewRect = new RectF();
     private final RectF mTempRect = new RectF();
@@ -332,7 +332,14 @@ public class CropRectView extends View {
         mTempRect.inset(-mCropRectCornerTouchAreaLineLength, mCropRectCornerTouchAreaLineLength);
         canvas.clipRect(mTempRect, Region.Op.DIFFERENCE);
 
-        canvas.drawRect(mCropViewRect, mCropFrameCornersPaint);
+        //draw inner triangle
+        RectF cornerRect = new RectF();
+        int padding = 20;
+        cornerRect.left = mCropViewRect.left + padding;
+        cornerRect.top = mCropViewRect.top + padding;
+        cornerRect.right = mCropViewRect.right - padding;
+        cornerRect.bottom = mCropViewRect.bottom - padding;
+        canvas.drawRect(cornerRect, mCropFrameCornersPaint);
 
         canvas.restore();
     }
@@ -355,11 +362,11 @@ public class CropRectView extends View {
     private void initCropFrameStyle() {
         int cropFrameStrokeSize = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_frame_stoke_width);
         int cropFrameColor =  getResources().getColor(R.color.ucrop_color_default_crop_frame);
-        mCropFramePaint.setStrokeWidth(cropFrameStrokeSize);
+        mCropFramePaint.setStrokeWidth(cropFrameStrokeSize * 2);
         mCropFramePaint.setColor(cropFrameColor);
         mCropFramePaint.setStyle(Paint.Style.STROKE);
 
-        mCropFrameCornersPaint.setStrokeWidth(cropFrameStrokeSize * 3);
+        mCropFrameCornersPaint.setStrokeWidth(cropFrameStrokeSize);
         mCropFrameCornersPaint.setColor(cropFrameColor);
         mCropFrameCornersPaint.setStyle(Paint.Style.STROKE);
     }

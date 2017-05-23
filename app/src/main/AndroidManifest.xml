@@ -87,7 +87,7 @@
             android:theme="@style/customTheme" />
         <activity android:name=".bitmapshader.BitmapShaderActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:theme="@style/customTheme" />
         <activity android:name=".crop.CropActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"

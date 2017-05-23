@@ -2,6 +2,7 @@ package com.huyn.demogroup.bitmapshader;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -27,7 +28,12 @@ public class BitmapShaderActivity extends Activity {
         mClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ImgProcessor(R.drawable.timg_face).startTask(BitmapShaderActivity.this, new ImgProcessor.OnProcessListener() {
+                if(mMask.getVisibility() != View.VISIBLE) {
+                    mMask.setVisibility(View.VISIBLE);
+                    mMask.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.bk_front));
+                    return;
+                }
+                new ImgProcessor(R.drawable.bk_front).startTask(BitmapShaderActivity.this, new ImgProcessor.OnProcessListener() {
                     @Override
                     public void onSuccess(Bitmap bitmap) {
                         mMask.setImageBitmap(bitmap);

@@ -13,18 +13,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <ImageView android:layout_width="700px"
-            android:layout_height="452px"
+        <ImageView android:layout_width="1400px"
+            android:layout_height="906px"
             android:scaleType="centerCrop"
-            android:src="@drawable/timg" />
+            android:src="@drawable/bk_back" />
 
         <ImageView
             android:id="@+id/mask"
-            android:layout_width="249px"
-            android:layout_height="166px"
-            android:layout_marginLeft="261px"
-            android:layout_marginTop="25px"
+            android:layout_width="498px"
+            android:layout_height="332px"
+            android:layout_marginLeft="522px"
+            android:layout_marginTop="50px"
             android:src="@drawable/timg_face"
+            android:visibility="gone"
             android:scaleType="centerCrop" />
     </FrameLayout>
 
