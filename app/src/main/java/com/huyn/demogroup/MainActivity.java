@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.huyn.demogroup.anim.ThreeDRotateActivity;
+import com.huyn.demogroup.bitmapshader.BitmapShaderActivity;
 import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
+import com.huyn.demogroup.crop.CropActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
@@ -33,6 +35,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, RelativeTopActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_bitmapshader).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, BitmapShaderActivity.class));
             }
         });
 
@@ -114,6 +123,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ClipChildAnimActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_crop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CropActivity.class));
             }
         });
 
