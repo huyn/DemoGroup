@@ -27,12 +27,16 @@ public class CropActivity extends Activity {
         setContentView(R.layout.activity_crop);
 
         mCropView = (CropRectView) findViewById(R.id.cropview);
-        mCropView.postRefrsh();
 
         mCropView.setOverlayViewChangeListener(new OverlayViewChangeListener() {
             @Override
             public void onCropRectUpdated(RectF cropRect) {
                 System.out.println("+++++++croprect:" + cropRect.left + "/" + cropRect.top + "/" + cropRect.right + "/" + cropRect.bottom);
+            }
+
+            @Override
+            public void onConfirmed() {
+                System.out.println("+++++++confirmed...");
             }
         });
 
@@ -42,7 +46,8 @@ public class CropActivity extends Activity {
         doCrop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doCrop(mCropView.getCropViewRect());
+                //doCrop(mCropView.getCropViewRect());
+                mCropView.clear();
             }
         });
     }

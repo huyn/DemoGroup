@@ -1,9 +1,13 @@
 package com.huyn.demogroup.crop;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathEffect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.os.Build;
@@ -13,6 +17,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.huyn.demogroup.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Oleksii Shliama (https://github.com/shliama).
@@ -41,11 +48,21 @@ public class CropRectView extends View {
     private Paint mCropGridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mCropFramePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mCropFrameCornersPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mCropSquarePointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mCropFrameDottedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float mPreviousTouchX = -1, mPreviousTouchY = -1;
     private int mCurrentTouchCornerIndex = -1;
     private int mTouchPointThreshold;
     private int mCropRectMinSize;
     private int mCropRectCornerTouchAreaLineLength;
+    private int mCropRectCornerPadding;
+    private int mCropRectPointSize;
+    private int mCropFrameStrokeSize;
+    private Bitmap mOk;
+    private int mBitmapW, mBitmapH;
+    private float mOkX, mOkY;
+    private long mDownEventTimeMills;
+    private List<RectF> mRecommendRect = new ArrayList<>();
 
     private OverlayViewChangeListener mCallback;
 
@@ -55,6 +72,12 @@ public class CropRectView extends View {
         mTouchPointThreshold = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_rect_corner_touch_threshold);
         mCropRectMinSize = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_rect_min_size);
         mCropRectCornerTouchAreaLineLength = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_rect_corner_touch_area_line_length);
+        mCropRectCornerPadding = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_rect_corner_padding);
+        mCropRectPointSize = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_point_size);
+        mCropFrameStrokeSize = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_frame_stoke_width);
+        mOk = BitmapFactory.decodeResource(getResources(), R.drawable.icon_ok);
+        mBitmapW = mOk.getWidth();
+        mBitmapH = mOk.getHeight();
     }
 
     public CropRectView(Context context) {
@@ -87,24 +110,61 @@ public class CropRectView extends View {
     /**
      * This method sets aspect ratio for crop bounds.
      */
-    public void postRefrsh() {
+    private void showRect(float x, float y) {
         if (mThisWidth > 0) {
-            setupCropBounds();
+            setupCropBounds(x, y);
             postInvalidate();
         } else {
             mShouldSetupCropBounds = true;
         }
     }
 
+    public void clear() {
+        mCropViewRect.setEmpty();
+        postInvalidate();
+    }
+
+    public void recycle() {
+        mRecommendRect.clear();
+    }
+
+    public void addRecommendRect(RectF rectF) {
+        mRecommendRect.add(rectF);
+        postInvalidate();
+    }
+
     /**
      * This method setups crop bounds rectangles for given aspect ratio and view size.
      * {@link #mCropViewRect} is used to draw crop bounds - uses padding.
      */
-    public void setupCropBounds() {
-        mCropViewRect.set(getPaddingLeft() + (mThisWidth / 4f),
-                getPaddingTop() + mThisHeight/4f,
-                getPaddingLeft() + mThisWidth*3f/4,
-                getPaddingTop() + mThisHeight*3f/4);
+    public void setupCropBounds(float x, float y) {
+        if(x == -1 || y == -1) {
+            mCropViewRect.set(getPaddingLeft() + (mThisWidth / 4f),
+                    getPaddingTop() + mThisHeight / 4f,
+                    getPaddingLeft() + mThisWidth * 3f / 4,
+                    getPaddingTop() + mThisHeight * 3f / 4);
+        } else {
+            float left = x - mCropRectMinSize/2;
+            float top = y - mCropRectMinSize/2;
+            float right = x + mCropRectMinSize/2;
+            float bottom = y + mCropRectMinSize/2;
+            if(left < 0) {
+                left = 0;
+                right = mCropRectMinSize;
+            } else if(right > mThisWidth) {
+                right = mThisWidth;
+                left = mThisWidth - mCropRectMinSize;
+            }
+
+            if(top < 0) {
+                top = 0;
+                bottom = mCropRectMinSize;
+            } else if(bottom > mThisHeight) {
+                bottom = mThisHeight;
+                top = mThisHeight - mCropRectMinSize;
+            }
+            mCropViewRect.set(left, top, right, bottom);
+        }
 
         if (mCallback != null) {
             mCallback.onCropRectUpdated(mCropViewRect);
@@ -143,7 +203,7 @@ public class CropRectView extends View {
 
             if (mShouldSetupCropBounds) {
                 mShouldSetupCropBounds = false;
-                postRefrsh();
+                showRect(-1, -1);
             }
         }
     }
@@ -155,18 +215,63 @@ public class CropRectView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawCropGrid(canvas);
+        drawOk(canvas);
+        drawRecommend(canvas);
+    }
+
+    /**
+     * 绘制推荐区域
+     * @param canvas
+     */
+    private void drawRecommend(Canvas canvas) {
+        if(mCropViewRect.isEmpty()) {
+            for(RectF rectF : mRecommendRect)
+                canvas.drawRect(rectF, mCropFrameDottedPaint);
+        }
+    }
+
+    /**
+     * 绘制ok键
+     * @param canvas
+     */
+    private void drawOk(Canvas canvas) {
+        if(mCropViewRect.isEmpty())
+            return;
+        int minGap = 10;
+        mOkX = mCropViewRect.right + minGap;
+        mOkY = mCropViewRect.bottom + minGap;
+        if(mOkX + mBitmapW > mThisWidth) {
+            if(mOkY + mBitmapH > mThisHeight) {
+                mOkX = mCropViewRect.left - minGap - mBitmapW;
+                mOkY = mThisHeight - mBitmapH - minGap;
+            } else {
+                mOkX = mThisWidth - mBitmapW - minGap;
+            }
+        } else if(mOkY + mBitmapH > mThisHeight) {
+            mOkY = mThisHeight - mBitmapH - minGap;
+        }
+        canvas.drawBitmap(mOk, mOkX, mOkY, null);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mCropViewRect.isEmpty()) { return false; }
-
         float x = event.getX();
         float y = event.getY();
+        if (mCropViewRect.isEmpty()) {
+            showRect(x, y);
+            return false;
+        }
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
             mCurrentTouchCornerIndex = getCurrentTouchIndex(x, y);
             boolean shouldHandle = mCurrentTouchCornerIndex != -1;
+            if(!shouldHandle) {
+                //check if ok is clicked
+                if(x >= mOkX - mBitmapW/2 && x <= mOkX + mBitmapW*3/2
+                        && y >= mOkY - mBitmapH/2 && y <= mOkY + mBitmapH*3/2)
+                    mDownEventTimeMills = System.currentTimeMillis();
+                    shouldHandle = true;
+            }
             if (!shouldHandle) {
                 mPreviousTouchX = -1;
                 mPreviousTouchY = -1;
@@ -178,21 +283,26 @@ public class CropRectView extends View {
         }
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_MOVE) {
-            if (event.getPointerCount() == 1 && mCurrentTouchCornerIndex != -1) {
+            if (event.getPointerCount() == 1) {
+                if(mCurrentTouchCornerIndex != -1) {
+                    x = Math.min(Math.max(x, getPaddingLeft()), getWidth() - getPaddingRight());
+                    y = Math.min(Math.max(y, getPaddingTop()), getHeight() - getPaddingBottom());
 
-                x = Math.min(Math.max(x, getPaddingLeft()), getWidth() - getPaddingRight());
-                y = Math.min(Math.max(y, getPaddingTop()), getHeight() - getPaddingBottom());
+                    updateCropViewRect(x, y);
 
-                updateCropViewRect(x, y);
-
-                mPreviousTouchX = x;
-                mPreviousTouchY = y;
-
+                    mPreviousTouchX = x;
+                    mPreviousTouchY = y;
+                }
                 return true;
             }
         }
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+            if(System.currentTimeMillis() - mDownEventTimeMills < 200) {
+                if (mCallback != null) {
+                    mCallback.onConfirmed();
+                }
+            }
             mPreviousTouchX = -1;
             mPreviousTouchY = -1;
             mCurrentTouchCornerIndex = -1;
@@ -207,31 +317,53 @@ public class CropRectView extends View {
 
     /**
      * * The order of the corners is:
-     * 0------->1
+     * 0---1--->2
      * ^        |
-     * |   4    |
+     * |        3
+     * 7   8    |
      * |        v
-     * 3<-------2
+     * 6<--5----4
      */
     private void updateCropViewRect(float touchX, float touchY) {
         mTempRect.set(mCropViewRect);
-
+        float offsetX=0;
+        float offsetY=0;
         switch (mCurrentTouchCornerIndex) {
             // resize rectangle
             case 0:
-                mTempRect.set(touchX, touchY, mCropViewRect.right, mCropViewRect.bottom);
+                offsetX=touchX-mCropViewRect.left;
+                offsetY=touchY-mCropViewRect.top;
+                mTempRect.set(touchX, touchY, mCropViewRect.right-offsetX, mCropViewRect.bottom-offsetY);
                 break;
             case 1:
-                mTempRect.set(mCropViewRect.left, touchY, touchX, mCropViewRect.bottom);
+                mTempRect.set(mCropViewRect.left, touchY, mCropViewRect.right, mCropViewRect.bottom);
                 break;
             case 2:
-                mTempRect.set(mCropViewRect.left, mCropViewRect.top, touchX, touchY);
+                offsetX=touchX-mCropViewRect.right;
+                offsetY=touchY-mCropViewRect.top;
+                mTempRect.set(mCropViewRect.left-offsetX, touchY, touchX, mCropViewRect.bottom-offsetY);
                 break;
             case 3:
-                mTempRect.set(touchX, mCropViewRect.top, mCropViewRect.right, touchY);
+                mTempRect.set(mCropViewRect.left, mCropViewRect.top, touchX, mCropViewRect.bottom);
+                break;
+            case 4:
+                offsetX=touchX-mCropViewRect.right;
+                offsetY=touchY-mCropViewRect.bottom;
+                mTempRect.set(mCropViewRect.left-offsetX, mCropViewRect.top-offsetY, touchX, touchY);
+                break;
+            case 5:
+                mTempRect.set(mCropViewRect.left, mCropViewRect.top, mCropViewRect.right, touchY);
+                break;
+            case 6:
+                offsetX=touchX-mCropViewRect.left;
+                offsetY=touchY-mCropViewRect.bottom;
+                mTempRect.set(touchX, mCropViewRect.top-offsetY, mCropViewRect.right-offsetX, touchY);
+                break;
+            case 7:
+                mTempRect.set(touchX, mCropViewRect.top, mCropViewRect.right, mCropViewRect.bottom);
                 break;
             // move rectangle
-            case 4:
+            case 8:
                 mTempRect.offset(touchX - mPreviousTouchX, touchY - mPreviousTouchY);
                 if (mTempRect.left > getLeft() && mTempRect.top > getTop()
                         && mTempRect.right < getRight() && mTempRect.bottom < getBottom()) {
@@ -258,18 +390,19 @@ public class CropRectView extends View {
 
     /**
      * * The order of the corners in the float array is:
-     * 0------->1
+     * 0---1--->2
      * ^        |
-     * |   4    |
+     * |        3
+     * 7   8    |
      * |        v
-     * 3<-------2
+     * 6<--5----4
      *
      * @return - index of corner that is being dragged
      */
     private int getCurrentTouchIndex(float touchX, float touchY) {
         int closestPointIndex = -1;
         double closestPointDistance = mTouchPointThreshold;
-        for (int i = 0; i < 8; i += 2) {
+        for (int i = 0; i < 16; i += 2) {
             double distanceToCorner = Math.sqrt(Math.pow(touchX - mCropGridCorners[i], 2)
                     + Math.pow(touchY - mCropGridCorners[i + 1], 2));
             if (distanceToCorner < closestPointDistance) {
@@ -279,7 +412,7 @@ public class CropRectView extends View {
         }
 
         if (closestPointIndex < 0 && mCropViewRect.contains(touchX, touchY)) {
-            return 4;
+            return 8;
         }
 
         return closestPointIndex;
@@ -324,6 +457,38 @@ public class CropRectView extends View {
 
         canvas.save();
 
+        /**
+         * draw 8 square points
+         */
+        float offset = (mCropRectPointSize - mCropFrameStrokeSize*2)/2f;
+        float left = mCropViewRect.left-offset;
+        float top = mCropViewRect.top-offset;
+        //topleft
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //topcenter
+        left = (mCropViewRect.right-mCropViewRect.left)/2f+mCropViewRect.left-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //topright
+        left = mCropViewRect.right-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //leftcenter
+        left = mCropViewRect.left-offset;
+        top = mCropViewRect.top + (mCropViewRect.bottom-mCropViewRect.top)/2-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //rightcenter
+        left = mCropViewRect.right-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //bottomleft
+        left = mCropViewRect.left-offset;
+        top = mCropViewRect.bottom-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //bottomcenter
+        left = (mCropViewRect.right-mCropViewRect.left)/2f+mCropViewRect.left-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+        //bottomright
+        left = mCropViewRect.right-offset;
+        canvas.drawRect(left, top, left + mCropRectPointSize, top + mCropRectPointSize, mCropSquarePointPaint);
+
         mTempRect.set(mCropViewRect);
         mTempRect.inset(mCropRectCornerTouchAreaLineLength, -mCropRectCornerTouchAreaLineLength);
         canvas.clipRect(mTempRect, Region.Op.DIFFERENCE);
@@ -334,11 +499,10 @@ public class CropRectView extends View {
 
         //draw inner triangle
         RectF cornerRect = new RectF();
-        int padding = 20;
-        cornerRect.left = mCropViewRect.left + padding;
-        cornerRect.top = mCropViewRect.top + padding;
-        cornerRect.right = mCropViewRect.right - padding;
-        cornerRect.bottom = mCropViewRect.bottom - padding;
+        cornerRect.left = mCropViewRect.left + mCropRectCornerPadding;
+        cornerRect.top = mCropViewRect.top + mCropRectCornerPadding;
+        cornerRect.right = mCropViewRect.right - mCropRectCornerPadding;
+        cornerRect.bottom = mCropViewRect.bottom - mCropRectCornerPadding;
         canvas.drawRect(cornerRect, mCropFrameCornersPaint);
 
         canvas.restore();
@@ -360,15 +524,22 @@ public class CropRectView extends View {
      * This method setups Paint object for the crop bounds.
      */
     private void initCropFrameStyle() {
-        int cropFrameStrokeSize = getResources().getDimensionPixelSize(R.dimen.ucrop_default_crop_frame_stoke_width);
         int cropFrameColor =  getResources().getColor(R.color.ucrop_color_default_crop_frame);
-        mCropFramePaint.setStrokeWidth(cropFrameStrokeSize * 2);
+        mCropFramePaint.setStrokeWidth(mCropFrameStrokeSize * 2);
         mCropFramePaint.setColor(cropFrameColor);
         mCropFramePaint.setStyle(Paint.Style.STROKE);
 
-        mCropFrameCornersPaint.setStrokeWidth(cropFrameStrokeSize);
+        mCropFrameCornersPaint.setStrokeWidth(mCropFrameStrokeSize);
         mCropFrameCornersPaint.setColor(cropFrameColor);
         mCropFrameCornersPaint.setStyle(Paint.Style.STROKE);
+
+        mCropFrameDottedPaint.setStrokeWidth(mCropFrameStrokeSize);
+        mCropFrameDottedPaint.setColor(cropFrameColor);
+        mCropFrameDottedPaint.setStyle(Paint.Style.STROKE);
+        PathEffect effects = new DashPathEffect(new float[] {10, 10}, 0);
+        mCropFrameDottedPaint.setPathEffect(effects);
+
+        mCropSquarePointPaint.setColor(cropFrameColor);
     }
 
     /**
