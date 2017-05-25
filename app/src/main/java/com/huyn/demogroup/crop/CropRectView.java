@@ -328,12 +328,23 @@ public class CropRectView extends View {
         mTempRect.set(mCropViewRect);
         float offsetX=0;
         float offsetY=0;
+        float left, top, right, bottom;
         switch (mCurrentTouchCornerIndex) {
             // resize rectangle
             case 0:
                 offsetX=touchX-mCropViewRect.left;
                 offsetY=touchY-mCropViewRect.top;
-                mTempRect.set(touchX, touchY, mCropViewRect.right-offsetX, mCropViewRect.bottom-offsetY);
+                right = mCropViewRect.right-offsetX;
+                bottom = mCropViewRect.bottom-offsetY;
+                if(right > mThisWidth) {
+                    right = mThisWidth;
+                    touchX = mCropViewRect.left + mCropViewRect.right - mThisWidth;
+                }
+                if(bottom > mThisHeight) {
+                    bottom = mThisHeight;
+                    touchY = mCropViewRect.top + mCropViewRect.bottom - mThisHeight;
+                }
+                mTempRect.set(touchX, touchY, right, bottom);
                 break;
             case 1:
                 mTempRect.set(mCropViewRect.left, touchY, mCropViewRect.right, mCropViewRect.bottom);
@@ -341,7 +352,17 @@ public class CropRectView extends View {
             case 2:
                 offsetX=touchX-mCropViewRect.right;
                 offsetY=touchY-mCropViewRect.top;
-                mTempRect.set(mCropViewRect.left-offsetX, touchY, touchX, mCropViewRect.bottom-offsetY);
+                left = mCropViewRect.left-offsetX;
+                bottom = mCropViewRect.bottom-offsetY;
+                if(left < 0) {
+                    left = 0;
+                    touchX = mCropViewRect.left + mCropViewRect.right;
+                }
+                if(bottom > mThisHeight) {
+                    bottom = mThisHeight;
+                    touchY = mCropViewRect.top + mCropViewRect.bottom - mThisHeight;
+                }
+                mTempRect.set(left, touchY, touchX, bottom);
                 break;
             case 3:
                 mTempRect.set(mCropViewRect.left, mCropViewRect.top, touchX, mCropViewRect.bottom);
@@ -349,7 +370,17 @@ public class CropRectView extends View {
             case 4:
                 offsetX=touchX-mCropViewRect.right;
                 offsetY=touchY-mCropViewRect.bottom;
-                mTempRect.set(mCropViewRect.left-offsetX, mCropViewRect.top-offsetY, touchX, touchY);
+                left = mCropViewRect.left-offsetX;
+                top = mCropViewRect.top-offsetY;
+                if(left < 0) {
+                    left = 0;
+                    touchX = mCropViewRect.left + mCropViewRect.right;
+                }
+                if(top < 0) {
+                    top = 0;
+                    touchY = mCropViewRect.top + mCropViewRect.bottom;
+                }
+                mTempRect.set(left, top, touchX, touchY);
                 break;
             case 5:
                 mTempRect.set(mCropViewRect.left, mCropViewRect.top, mCropViewRect.right, touchY);
@@ -357,7 +388,17 @@ public class CropRectView extends View {
             case 6:
                 offsetX=touchX-mCropViewRect.left;
                 offsetY=touchY-mCropViewRect.bottom;
-                mTempRect.set(touchX, mCropViewRect.top-offsetY, mCropViewRect.right-offsetX, touchY);
+                right = mCropViewRect.left-offsetX;
+                top = mCropViewRect.top-offsetY;
+                if(right > mThisWidth) {
+                    right = mThisWidth;
+                    touchX = mCropViewRect.left + mCropViewRect.right - mThisWidth;
+                }
+                if(top < 0) {
+                    top = 0;
+                    touchY = mCropViewRect.top + mCropViewRect.bottom;
+                }
+                mTempRect.set(touchX, top, right, touchY);
                 break;
             case 7:
                 mTempRect.set(touchX, mCropViewRect.top, mCropViewRect.right, mCropViewRect.bottom);
