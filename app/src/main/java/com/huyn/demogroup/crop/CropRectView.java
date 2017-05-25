@@ -78,6 +78,7 @@ public class CropRectView extends View {
         mOk = BitmapFactory.decodeResource(getResources(), R.drawable.icon_ok);
         mBitmapW = mOk.getWidth();
         mBitmapH = mOk.getHeight();
+        mRecommendRect.add(new RectF(100, 100, 400, 400));
     }
 
     public CropRectView(Context context) {
@@ -117,6 +118,27 @@ public class CropRectView extends View {
         } else {
             mShouldSetupCropBounds = true;
         }
+    }
+
+    private void showRect(RectF rectF) {
+        if (mThisWidth > 0) {
+            setupCropBounds(rectF);
+            postInvalidate();
+        } else {
+            mShouldSetupCropBounds = true;
+        }
+    }
+
+    private RectF getCurrentCropRect(float x, float y) {
+        if(mRecommendRect.size() == 0)
+            return null;
+        for(RectF rect : mRecommendRect) {
+            if(rect.contains(x, y)) {
+                mRecommendRect.remove(rect);
+                return rect;
+            }
+        }
+        return null;
     }
 
     public void clear() {
@@ -165,6 +187,16 @@ public class CropRectView extends View {
             }
             mCropViewRect.set(left, top, right, bottom);
         }
+
+        if (mCallback != null) {
+            mCallback.onCropRectUpdated(mCropViewRect);
+        }
+
+        updateGridPoints();
+    }
+
+    public void setupCropBounds(RectF rectF) {
+        mCropViewRect.set(rectF);
 
         if (mCallback != null) {
             mCallback.onCropRectUpdated(mCropViewRect);
@@ -257,12 +289,22 @@ public class CropRectView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
-        if (mCropViewRect.isEmpty()) {
+        boolean isCropViewRectBlank = mCropViewRect.isEmpty();
+        /*if (mCropViewRect.isEmpty()) {
             showRect(x, y);
             return false;
-        }
+        }*/
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
+            if(isCropViewRectBlank) {
+                RectF rectF = getCurrentCropRect(x, y);
+                if(rectF != null) {
+                    showRect(rectF);
+                } else {
+                    showRect(x, y);
+                }
+                return false;
+            }
             mCurrentTouchCornerIndex = getCurrentTouchIndex(x, y);
             boolean shouldHandle = mCurrentTouchCornerIndex != -1;
             if(!shouldHandle) {
@@ -281,6 +323,9 @@ public class CropRectView extends View {
             }
             return shouldHandle;
         }
+
+        if(isCropViewRectBlank)
+            return false;
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_MOVE) {
             if (event.getPointerCount() == 1) {
