@@ -3,8 +3,8 @@ package com.huyn.demogroup;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.huyn.demogroup.anim.ThreeDRotateActivity;
@@ -19,6 +19,7 @@ import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
+import com.huyn.demogroup.seekbar.SeekSampleActivity;
 import com.huyn.demogroup.sensor.RotationVectorDemo;
 import com.huyn.demogroup.zoomageview.ZoomageViewActivity;
 
@@ -130,6 +131,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, CropActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_seekview).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SeekSampleActivity.class));
             }
         });
 
