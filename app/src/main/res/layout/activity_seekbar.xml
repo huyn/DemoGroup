@@ -28,14 +28,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
-        app:bsb_bubble_color="@color/color_red_light"
-        app:bsb_bubble_text_color="@color/color_green"
-        app:bsb_bubble_text_size="18sp"
-        app:bsb_max="100"
-        app:bsb_min="0"
-        app:bsb_second_track_color="@color/color_red"
-        app:bsb_section_count="5"
-        app:bsb_show_section_mark="true"
-        app:bsb_thumb_text_size="18sp"/>
+        app:tsb_toast_text_color="@color/color_green"
+        app:tsb_toast_text_size="14sp"
+        app:tsb_max="100"
+        app:tsb_min="0"
+        app:tsb_second_track_color="@color/color_red"
+        app:tsb_thumb_radius="8dip"/>
 
 </LinearLayout>

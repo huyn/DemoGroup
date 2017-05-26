@@ -39,4 +39,23 @@
         <attr name="bsb_anim_duration" format="integer"/> <!--duration of animation, default: 200ms-->
         <attr name="bsb_always_show_bubble" format="boolean"/> <!--bubble shows all time, default: false-->
     </declare-styleable>
+
+    <declare-styleable name="ToastSeekBar">
+        <attr name="tsb_min" format="float|reference"/> <!--min < max, default: 0.0f-->
+        <attr name="tsb_max" format="float|reference"/> <!--min < max, default: 100.0f-->
+        <attr name="tsb_progress" format="float|reference"/> <!--real time progress value, default: min-->
+        <attr name="tsb_track_size" format="dimension|reference"/> <!--height of right-track(on the right of thumb), default: 2dp-->
+        <!--height of left-track(on the left of thumb), default: 2dp higher than right-track's height-->
+        <attr name="tsb_second_track_size" format="dimension|reference"/>
+        <attr name="tsb_thumb_solid" format="boolean"/> <!--solid or stroke, default: true-->
+        <attr name="tsb_thumb_radius" format="dimension|reference"/> <!--radius of thumb, default: 2dp higher than left-track's height-->
+        <!--radius of thumb when be dragging, default: 2 times of left-track's height-->
+        <attr name="tsb_track_color" format="color|reference"/> <!--color of right-track, default: R.color.colorPrimary-->
+        <attr name="tsb_second_track_color" format="color|reference"/> <!--color of left-track, default: R.color.colorAccent-->
+        <attr name="tsb_thumb_color" format="color|reference"/> <!--color of thumb, default: same as left-track's color-->
+        <attr name="tsb_toast_text_size" format="dimension|reference"/> <!--text size of bubble-progress, default: 14sp-->
+        <attr name="tsb_toast_text_color" format="color|reference"/> <!--text color of bubble-progress, default: #ffffffff-->
+        <attr name="tsb_anim_duration" format="integer"/> <!--duration of animation, default: 200ms-->
+        <attr name="tsb_always_show_bubble" format="boolean"/> <!--bubble shows all time, default: false-->
+    </declare-styleable>
 </resources>
