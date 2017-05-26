@@ -35,10 +35,15 @@
         app:tsb_second_track_color="@color/color_red"
         app:tsb_thumb_radius="8dip"/>
 
-    <com.huyn.demogroup.seekbar.ColoredRoundView
-        android:id="@+id/colored_view"
-        android:layout_marginTop="50dip"
+    <FrameLayout
         android:layout_width="80dip"
-        android:layout_height="80dip" />
+        android:layout_height="80dip"
+        android:layout_marginTop="50dip"
+        android:background="@color/color_blue">
+        <com.huyn.demogroup.seekbar.ColoredRoundView
+            android:id="@+id/colored_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 
 </LinearLayout>

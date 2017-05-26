@@ -43,7 +43,7 @@ public class ColoredRoundView extends View {
         mBorderColor = a.getColor(R.styleable.ColoredRoundView_crv_border_color, getResources().getColor(R.color.coloredroundview_color_default_border));
         mUnselectedColor = a.getColor(R.styleable.ColoredRoundView_crv_unselected_color, getResources().getColor(R.color.coloredroundview_color_default_unselected));
         mBorderSize = a.getDimensionPixelSize(R.styleable.ColoredRoundView_crv_border_size, dp2px(2));
-        mRadius = a.getDimensionPixelSize(R.styleable.ColoredRoundView_crv_radius, dp2px(30));
+        mRadius = a.getDimensionPixelSize(R.styleable.ColoredRoundView_crv_radius, dp2px(20));
         mSelected = a.getBoolean(R.styleable.ColoredRoundView_crv_selected, true);
         a.recycle();
 
@@ -55,8 +55,12 @@ public class ColoredRoundView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         int heightMeasureSpecMode = MeasureSpec.getMode(heightMeasureSpec);
-        if(heightMeasureSpecMode != MeasureSpec.EXACTLY)
+        if(heightMeasureSpecMode == MeasureSpec.UNSPECIFIED) {
             setMeasuredDimension(resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec), mRadius);
+        }
+
+        float radius = Math.min(getMeasuredWidth()/2, getMeasuredHeight()/2);
+        mRadius = (int) radius;
     }
 
     @Override
@@ -66,18 +70,15 @@ public class ColoredRoundView extends View {
 
         float centerX = width/2F;
         float centerY = height/2F;
-        float radius = Math.min(centerX, centerY);
-        if(radius > mRadius)
-            radius = mRadius;
         if(mSelected) {
             mPaint.setColor(mSelectedColor);
-            canvas.drawCircle(centerX, centerY, radius, mPaint);
+            canvas.drawCircle(centerX, centerY, mRadius, mPaint);
         } else {
             mPaint.setColor(mBorderColor);
-            canvas.drawCircle(centerX, centerY, radius, mPaint);
+            canvas.drawCircle(centerX, centerY, mRadius, mPaint);
 
             mPaint.setColor(mUnselectedColor);
-            canvas.drawCircle(centerX, centerY, radius-mBorderSize, mPaint);
+            canvas.drawCircle(centerX, centerY, mRadius-mBorderSize, mPaint);
         }
     }
 
