@@ -43,4 +43,13 @@
         <attr name="tileBackgroundColor" format="color"/>
     </declare-styleable>
 
+    <declare-styleable name="ColoredRoundView">
+        <attr name="crv_selected_color" format="color|reference"/>
+        <attr name="crv_border_color" format="color|reference"/>
+        <attr name="crv_unselected_color" format="color|reference"/>
+        <attr name="crv_border_size" format="dimension|reference"/>
+        <attr name="crv_radius" format="dimension|reference"/>
+        <attr name="crv_selected" format="boolean" />
+    </declare-styleable>
+
 </resources>

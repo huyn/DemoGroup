@@ -3,6 +3,7 @@ package com.huyn.demogroup.seekbar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import com.huyn.demogroup.R;
 
@@ -12,9 +13,20 @@ import com.huyn.demogroup.R;
  */
 
 public class SeekSampleActivity extends Activity {
+
+    ColoredRoundView coloredRoundView;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seekbar);
+
+        coloredRoundView = (ColoredRoundView) findViewById(R.id.colored_view);
+        coloredRoundView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                coloredRoundView.toggle();
+            }
+        });
     }
 }
