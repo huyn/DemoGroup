@@ -558,6 +558,7 @@ public class BubbleSeekBar extends View {
                     }
                     showBubble();
                     invalidate();
+                    System.out.println("++++++++down 1");
                 } else if (isTouchToSeek && isTrackTouched(event)) {
                     if (isAlwaysShowBubble) {
                         hideBubble();
@@ -576,6 +577,7 @@ public class BubbleSeekBar extends View {
 
                     showBubble();
                     invalidate();
+                    System.out.println("++++++++down 2");
                 }
 
                 dx = mThumbCenterX - event.getX();
@@ -617,8 +619,10 @@ public class BubbleSeekBar extends View {
                                 autoAdjustSection();
                             }
                         }, isThumbOnDragging ? 0 : 300);
+                        System.out.println("++++++++up 1");
                     } else {
                         autoAdjustSection();
+                        System.out.println("++++++++up 2");
                     }
                 } else if (isThumbOnDragging || isTouchToSeek) {
                     mBubbleView.postDelayed(new Runnable() {
@@ -657,6 +661,7 @@ public class BubbleSeekBar extends View {
 
                         }
                     }, !isThumbOnDragging && isTouchToSeek ? 300 : 0);
+                    System.out.println("++++++++up 3");
                 }
 
                 if (mProgressListener != null) {

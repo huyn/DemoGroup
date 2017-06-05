@@ -52,6 +52,7 @@ public class ToastSeekBar extends View {
     private boolean isThumbOnDragging; // is thumb on dragging or not
     private int mTextSpace; // space between text and track
     private boolean triggerBubbleShowing;
+    private boolean isTouchToSeek; // touch anywhere on track to quickly seek
 
     private OnProgressChangedListener mProgressListener; // progress changing listener
     private float mLeft; // space between left of track and left of the view
@@ -103,6 +104,7 @@ public class ToastSeekBar extends View {
         int duration = a.getInteger(R.styleable.ToastSeekBar_tsb_anim_duration, -1);
         mAnimDuration = duration < 0 ? 200 : duration;
         isAlwaysShowBubble = a.getBoolean(R.styleable.ToastSeekBar_tsb_always_show_bubble, false);
+        isTouchToSeek = a.getBoolean(R.styleable.ToastSeekBar_tsb_touch_to_seek, true);
         a.recycle();
 
         mPaint = new Paint();
@@ -295,7 +297,8 @@ public class ToastSeekBar extends View {
                     }
                     showBubble();
                     invalidate();
-                } else if (isTrackTouched(event)) {
+                    System.out.println("++++++++down 1");
+                } else if (isTouchToSeek && isTrackTouched(event)) {
                     if (isAlwaysShowBubble) {
                         hideBubble();
                         triggerBubbleShowing = true;
@@ -313,6 +316,7 @@ public class ToastSeekBar extends View {
 
                     showBubble();
                     invalidate();
+                    System.out.println("++++++++down 2");
                 }
 
                 dx = mThumbCenterX - event.getX();
@@ -344,7 +348,8 @@ public class ToastSeekBar extends View {
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (isThumbOnDragging) {
+                if (isThumbOnDragging || isTouchToSeek) {
+                    System.out.println("++++++++up 1");
                     mToastView.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -390,7 +395,7 @@ public class ToastSeekBar extends View {
                 break;
         }
 
-        return isThumbOnDragging || super.onTouchEvent(event);
+        return isThumbOnDragging || isTouchToSeek || super.onTouchEvent(event);
     }
 
     /**

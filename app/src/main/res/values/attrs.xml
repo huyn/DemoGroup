@@ -52,4 +52,13 @@
         <attr name="crv_selected" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="StepByStepView">
+        <attr name="sbsv_selected_color" format="color|reference"/>
+        <attr name="sbsv_border_color" format="color|reference"/>
+        <attr name="sbsv_unselected_color" format="color|reference"/>
+        <attr name="sbsv_border_size" format="dimension|reference"/>
+        <attr name="sbsv_radius" format="dimension|reference"/>
+        <attr name="sbsv_gap" format="dimension|reference"/>
+        <attr name="sbsv_textsize" format="dimension|reference"/>
+    </declare-styleable>
 </resources>

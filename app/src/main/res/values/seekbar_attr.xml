@@ -57,5 +57,6 @@
         <attr name="tsb_toast_text_color" format="color|reference"/> <!--text color of bubble-progress, default: #ffffffff-->
         <attr name="tsb_anim_duration" format="integer"/> <!--duration of animation, default: 200ms-->
         <attr name="tsb_always_show_bubble" format="boolean"/> <!--bubble shows all time, default: false-->
+        <attr name="tsb_touch_to_seek" format="boolean"/> <!--touch anywhere on track to quickly seek, default: false-->
     </declare-styleable>
 </resources>
