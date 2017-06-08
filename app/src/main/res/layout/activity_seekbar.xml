@@ -62,6 +62,6 @@
             android:layout_marginLeft="50dip"
             android:background="@drawable/bg_unselected" />
 
-    </LinearLayout>F
+    </LinearLayout>
 
 </LinearLayout>

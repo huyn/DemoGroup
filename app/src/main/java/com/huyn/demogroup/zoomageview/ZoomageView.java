@@ -259,6 +259,11 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
         }
     }
 
+    @Override
+    public void onDragEnd() {
+
+    }
+
     private void checkAndDisplayRect() {
         float transX = offsetLeftAndRight;//getTranslationX();
         float transY = offsetTopAndBottom;//getTranslationY();

@@ -19,6 +19,8 @@ public interface OnGestureListener {
 
     void onDrag(float dx, float dy);
 
+    public void onDragEnd();
+
     void onFling(float startX, float startY, float velocityX,
                  float velocityY);
 

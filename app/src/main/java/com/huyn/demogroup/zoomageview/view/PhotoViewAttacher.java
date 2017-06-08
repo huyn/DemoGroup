@@ -304,6 +304,11 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     }
 
     @Override
+    public void onDragEnd() {
+
+    }
+
+    @Override
     public void onFling(float startX, float startY, float velocityX,
                         float velocityY) {
         mCurrentFlingRunnable = new FlingRunnable(mImageView.getContext());
