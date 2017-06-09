@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -216,10 +217,10 @@ public class CropRectView extends View {
     }
 
     protected void init() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2 &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2 &&
+//                Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             setLayerType(LAYER_TYPE_SOFTWARE, null);
-        }
+//        }
     }
 
     @Override
@@ -610,22 +611,31 @@ public class CropRectView extends View {
      * This method setups Paint object for the crop bounds.
      */
     private void initCropFrameStyle() {
+        int radius = 4;
+        int dy = 2;
+        int dx = 0;
+        int color = 0x44000000;
+
         int cropFrameColor =  getResources().getColor(R.color.ucrop_color_default_crop_frame);
         mCropFramePaint.setStrokeWidth(mCropFrameStrokeSize * 2);
         mCropFramePaint.setColor(cropFrameColor);
         mCropFramePaint.setStyle(Paint.Style.STROKE);
+        mCropFramePaint.setShadowLayer(radius, dx, dy, color);
 
         mCropFrameCornersPaint.setStrokeWidth(mCropFrameStrokeSize);
         mCropFrameCornersPaint.setColor(cropFrameColor);
         mCropFrameCornersPaint.setStyle(Paint.Style.STROKE);
+        mCropFrameCornersPaint.setShadowLayer(radius, dx, dy, color);
 
         mCropFrameDottedPaint.setStrokeWidth(mCropFrameStrokeSize);
         mCropFrameDottedPaint.setColor(cropFrameColor);
         mCropFrameDottedPaint.setStyle(Paint.Style.STROKE);
         PathEffect effects = new DashPathEffect(new float[] {10, 10}, 0);
         mCropFrameDottedPaint.setPathEffect(effects);
+        mCropFrameDottedPaint.setShadowLayer(radius, dx, dy, color);
 
         mCropSquarePointPaint.setColor(cropFrameColor);
+        mCropSquarePointPaint.setShadowLayer(radius, dx, dy, color);
     }
 
     /**
