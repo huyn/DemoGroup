@@ -17,4 +17,5 @@ public class BaseApplication extends Application {
         Static.CONTEXT = this;
         Static.INFLATER = LayoutInflater.from(this);
     }
+
 }

@@ -15,6 +15,24 @@
         tools:context="com.huyn.demogroup.MainActivity">
 
         <Button
+            android:id="@+id/click_mask"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MaskView" />
+
+        <Button
+            android:id="@+id/click_rectscale"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RectScale" />
+
+        <Button
+            android:id="@+id/click_behavior"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Behavior" />
+
+        <Button
             android:id="@+id/click_scale"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

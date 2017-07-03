@@ -1,7 +1,6 @@
-package com.huyn.demogroup.scale;
+package com.huyn.demogroup.crop.motion;
 
 import android.content.Context;
-import android.graphics.RectF;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,14 +11,11 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import com.huyn.demogroup.zoomageview.view.Compat;
-import com.huyn.demogroup.zoomageview.view.OnGestureListener;
-
 /**
  * Created by huyaonan on 2017/6/8.
  */
 
-public class ScaleLayout extends FrameLayout implements OnGestureListener {
+public class MotionLayout extends FrameLayout implements OnMotionGestureListener {
 
     private static final int EDGE_NONE = -1;
     private static final int EDGE_LEFT = 0;
@@ -35,25 +31,25 @@ public class ScaleLayout extends FrameLayout implements OnGestureListener {
     private Interpolator mInterpolator = new AccelerateDecelerateInterpolator();
     private int mZoomDuration = DEFAULT_ZOOM_DURATION;
 
-    private ScaleAndDragGestureDetector mScaleDragDetector;
+    private MotionGestureDetector mScaleDragDetector;
     private boolean mAllowParentInterceptOnEdge = true;
     private boolean mBlockParentIntercept = false;
 
-    private OnScaleListener mScaleListener;
+    private OnMotionListener mScaleListener;
 
-    public ScaleLayout(@NonNull Context context) {
+    public MotionLayout(@NonNull Context context) {
         this(context, null);
     }
 
-    public ScaleLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public MotionLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ScaleLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    public MotionLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         // Create Gesture Detectors...
-        mScaleDragDetector = new ScaleAndDragGestureDetector(context, this);
+        mScaleDragDetector = new MotionGestureDetector(context, this);
     }
 
     @Override
@@ -104,7 +100,13 @@ public class ScaleLayout extends FrameLayout implements OnGestureListener {
     }
 
     @Override
-    public void onDrag(boolean down, float dx, float dy) {
+    public void onDragStart() {
+        if(mScaleListener != null)
+            mScaleListener.onDragStart();
+    }
+
+    @Override
+    public void onDrag(float dx, float dy) {
         if (mScaleDragDetector.isScaling()) {
             return; // Do not drag if we are already scaling
         }
@@ -139,24 +141,23 @@ public class ScaleLayout extends FrameLayout implements OnGestureListener {
     }
 
     @Override
-    public void onDragEnd(boolean down) {
+    public void onDragEnd() {
         if(mScaleListener != null)
             mScaleListener.onRelease();
     }
 
     @Override
-    public void onFling(boolean down, float startX, float startY, float velocityX, float velocityY) {
+    public void onFling(float startX, float startY, float velocityX, float velocityY) {
 
     }
 
     @Override
-    public boolean onScale(float scaleFactor, float focusX, float focusY) {
+    public void onScale(float scaleFactor, float focusX, float focusY) {
         if(mScaleListener != null)
             mScaleListener.onScale(scaleFactor, focusX, focusY);
-        return false;
     }
 
-    public void setOnScaleListener(OnScaleListener listener) {
+    public void setOnScaleListener(OnMotionListener listener) {
         mScaleListener = listener;
     }
 
@@ -202,7 +203,7 @@ public class ScaleLayout extends FrameLayout implements OnGestureListener {
 
             // We haven't hit our target scale yet, so post ourselves again
             if (t < 1f) {
-                Compat.postOnAnimation(ScaleLayout.this, this);
+                Compat.postOnAnimation(MotionLayout.this, this);
             }
         }
 

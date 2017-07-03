@@ -7,6 +7,5 @@
 .idea/
 /src/androidTest/
 /src/test/
-app/libs/
 app/src/androidTest/
 app/src/test/

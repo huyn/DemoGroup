@@ -17,13 +17,13 @@ package com.huyn.demogroup.zoomageview.view;
 
 public interface OnGestureListener {
 
-    void onDrag(float dx, float dy);
+    void onDrag(boolean down, float dx, float dy);
 
-    public void onDragEnd();
+    public void onDragEnd(boolean down);
 
-    void onFling(float startX, float startY, float velocityX,
+    void onFling(boolean down, float startX, float startY, float velocityX,
                  float velocityY);
 
-    void onScale(float scaleFactor, float focusX, float focusY);
+    boolean onScale(float scaleFactor, float focusX, float focusY);
 
 }

@@ -16,6 +16,7 @@
 package com.huyn.demogroup.zoomageview.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -32,6 +33,8 @@ public class PhotoView extends android.support.v7.widget.AppCompatImageView {
 
     private PhotoViewAttacher attacher;
 
+    private float mTop, mLeft, mRight, mBottom;
+
     public PhotoView(Context context) {
         this(context, null);
     }
@@ -42,14 +45,46 @@ public class PhotoView extends android.support.v7.widget.AppCompatImageView {
 
     public PhotoView(Context context, AttributeSet attr, int defStyle) {
         super(context, attr, defStyle);
-        init();
+        //init();
     }
 
-    private void init() {
+    public PhotoViewAttacher init() {
         attacher = new PhotoViewAttacher(this);
         //We always pose as a Matrix scale type, though we can change to another scale type
         //via the attacher
         super.setScaleType(ScaleType.MATRIX);
+
+        resetClip();
+        return attacher;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        Drawable mDrawable = getDrawable();
+        if(mDrawable == null)
+            return;
+
+        final int saveCount = canvas.getSaveCount();
+        canvas.save();
+
+        canvas.clipRect(mLeft, mTop, mRight, mBottom);
+
+        if (getImageMatrix() != null) {
+            canvas.concat(getImageMatrix());
+        }
+        mDrawable.draw(canvas);
+        canvas.restoreToCount(saveCount);
+    }
+
+    public void resetClip() {
+        mLeft=mTop=mRight=mBottom=0;
+    }
+
+    public void updateClip(float left, float top, float right, float bottom) {
+        mLeft = left;
+        mTop = top;
+        mRight = right;
+        mBottom = bottom;
     }
 
     /**
@@ -224,4 +259,9 @@ public class PhotoView extends android.support.v7.widget.AppCompatImageView {
     public void setOnSingleFlingListener(OnSingleFlingListener onSingleFlingListener) {
         attacher.setOnSingleFlingListener(onSingleFlingListener);
     }
+
+    public void setDragToFinishListener(int distance, OnDragToFinishListener listener) {
+        attacher.setDragToFinishListener(distance, listener);
+    }
+
 }

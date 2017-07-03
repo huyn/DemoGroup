@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.huyn.demogroup.R;
+import com.huyn.demogroup.crop.motion.MotionLayout;
+import com.huyn.demogroup.crop.motion.MotionWrapper;
+import com.huyn.demogroup.crop.motion.OnMotionStateListener;
 
 /**
  * Created by huyaonan on 2017/5/23.
@@ -19,7 +22,10 @@ public class CropActivity extends Activity {
 
     private CropRectView mCropView;
     private View doCrop;
-    private ImageView mResult;
+    private ImageView mResult, mOriginImg;
+
+    //private MotionLayout mMotionLayout;
+    private MotionWrapper mMotionWrapper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,12 +48,24 @@ public class CropActivity extends Activity {
 
         doCrop = findViewById(R.id.do_crop);
         mResult = (ImageView) findViewById(R.id.result);
+        mOriginImg = (ImageView) findViewById(R.id.origin_img);
 
         doCrop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //doCrop(mCropView.getCropViewRect());
                 mCropView.clear();
+            }
+        });
+
+        //mMotionLayout = (MotionLayout) findViewById(R.id.stylize_motion_layout);
+        mMotionWrapper = new MotionWrapper(mCropView, mOriginImg, new OnMotionStateListener() {
+            @Override
+            public void onMotionStart() {
+            }
+
+            @Override
+            public void onMotionEnd() {
             }
         });
     }

@@ -8,16 +8,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.huyn.demogroup.anim.ThreeDRotateActivity;
+import com.huyn.demogroup.bahavior.BehaviorActivity;
 import com.huyn.demogroup.bitmapshader.BitmapShaderActivity;
 import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
 import com.huyn.demogroup.crop.CropActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
+import com.huyn.demogroup.mask.TestMaskActivity;
 import com.huyn.demogroup.opengl.TutorialPartOne;
 import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
+import com.huyn.demogroup.rectscale.RectScaleActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.scale.ScaleDemoActivity;
 import com.huyn.demogroup.seekbar.SeekSampleActivity;
@@ -149,7 +152,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        printCacheDirs();
+        findViewById(R.id.click_behavior).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, BehaviorActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_rectscale).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RectScaleActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_mask).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, TestMaskActivity.class));
+            }
+        });
+        //printCacheDirs();
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)

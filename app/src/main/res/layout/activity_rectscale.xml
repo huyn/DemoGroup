@@ -1,0 +1,48 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_red">
+
+    <ImageView
+        android:id="@+id/rect_img"
+        android:layout_width="300dip"
+        android:layout_height="150dip"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"
+        android:src="@drawable/bk_front"/>
+
+    <com.huyn.demogroup.rectscale.RectScaleView
+        android:id="@+id/rect_scale"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <com.huyn.demogroup.zoomageview.view.PhotoLayout
+        android:id="@+id/photoview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_gravity="bottom|center_horizontal">
+
+        <Button
+            android:id="@+id/fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="fill"/>
+
+        <Button
+            android:id="@+id/resize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="resize"/>
+
+    </LinearLayout>
+
+
+</FrameLayout>

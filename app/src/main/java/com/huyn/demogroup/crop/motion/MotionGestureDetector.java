@@ -1,32 +1,14 @@
-/*******************************************************************************
- * Copyright 2011, 2012 Chris Banes.
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *******************************************************************************/
-package com.huyn.demogroup.scale;
+package com.huyn.demogroup.crop.motion;
 
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 
-import com.huyn.demogroup.zoomageview.view.OnGestureListener;
-import com.huyn.demogroup.zoomageview.view.Util;
-
 /**
  * Does a whole lot of gesture detecting.
  */
-public class ScaleAndDragGestureDetector {
+public class MotionGestureDetector {
 
     private static final int INVALID_POINTER_ID = -1;
 
@@ -40,10 +22,11 @@ public class ScaleAndDragGestureDetector {
     private float mLastTouchY;
     private final float mTouchSlop;
     private final float mMinimumVelocity;
-    private OnGestureListener mListener;
+    private OnMotionGestureListener mListener;
     private boolean isScaling = false;
+    private boolean mDragEventInvoked = false;
 
-    public ScaleAndDragGestureDetector(Context context, OnGestureListener listener) {
+    public MotionGestureDetector(Context context, OnMotionGestureListener listener) {
         final ViewConfiguration configuration = ViewConfiguration
                 .get(context);
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
@@ -114,7 +97,7 @@ public class ScaleAndDragGestureDetector {
     private boolean processTouchEvent(MotionEvent ev) {
         boolean result = mDetector.onTouchEvent(ev);
         final int action = ev.getAction() & MotionEvent.ACTION_MASK;
-        System.out.println("action : " + action + "___ev.getPointerCount() ::: " + ev.getPointerCount() + "_____" + result);
+        //Utils.sysout("action : " + action + "___ev.getPointerCount() ::: " + ev.getPointerCount() + "_____" + result);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 mActivePointerId = ev.getPointerId(0);
@@ -128,6 +111,7 @@ public class ScaleAndDragGestureDetector {
                 mLastTouchY = getActiveY(ev);
                 mIsDragging = false;
                 isScaling = false;
+                mDragEventInvoked = false;
                 break;
             case MotionEvent.ACTION_MOVE:
                 final float x = getActiveX(ev);
@@ -141,10 +125,15 @@ public class ScaleAndDragGestureDetector {
                 }
 
                 if (mIsDragging) {
-                    if(!isScaling)
+                    if(!isScaling) {
                         isScaling = isScaling();
+                        if(isScaling) {
+                            mDragEventInvoked = true;
+                            mListener.onDragStart();
+                        }
+                    }
                     if(isScaling)
-                        mListener.onDrag(false, dx, dy);
+                        mListener.onDrag(dx, dy);
                     mLastTouchX = x;
                     mLastTouchY = y;
 
@@ -160,8 +149,8 @@ public class ScaleAndDragGestureDetector {
                     mVelocityTracker.recycle();
                     mVelocityTracker = null;
                 }
-                if(mIsDragging)
-                    mListener.onDragEnd(false);
+                if(mDragEventInvoked)
+                    mListener.onDragEnd();
                 break;
             case MotionEvent.ACTION_UP:
                 mActivePointerId = INVALID_POINTER_ID;
@@ -180,13 +169,14 @@ public class ScaleAndDragGestureDetector {
                         // If the velocity is greater than minVelocity, call
                         // listener
                         if (Math.max(Math.abs(vX), Math.abs(vY)) >= mMinimumVelocity) {
-                            mListener.onFling(false, mLastTouchX, mLastTouchY, -vX,
+                            mListener.onFling(mLastTouchX, mLastTouchY, -vX,
                                     -vY);
                         }
                     }
-
-                    mListener.onDragEnd(false);
                 }
+
+                if(mDragEventInvoked)
+                    mListener.onDragEnd();
 
                 // Recycle Velocity Tracker
                 if (null != mVelocityTracker) {

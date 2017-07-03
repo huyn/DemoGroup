@@ -23,4 +23,5 @@
     <color name="coloredroundview_color_default_selected">#FF4081</color>
     <color name="coloredroundview_color_default_border">#333333</color>
     <color name="coloredroundview_color_default_unselected">#ffffff</color>
+
 </resources>

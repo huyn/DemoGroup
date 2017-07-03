@@ -218,7 +218,7 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
     float offsetLeftAndRight=0;
     float offsetTopAndBottom=0;
     @Override
-    public void onDrag(float dx, float dy) {
+    public void onDrag(boolean down, float dx, float dy) {
         if (mScaleDragDetector.isScaling()) {
             return; // Do not drag if we are already scaling
         }
@@ -260,7 +260,7 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
     }
 
     @Override
-    public void onDragEnd() {
+    public void onDragEnd(boolean down) {
 
     }
 
@@ -289,7 +289,7 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
     }
 
     @Override
-    public void onFling(float startX, float startY, float velocityX,
+    public void onFling(boolean down, float startX, float startY, float velocityX,
                         float velocityY) {
         mCurrentFlingRunnable = new FlingRunnable(ZoomageView.this.getContext());
         mCurrentFlingRunnable.fling(getImageViewWidth(ZoomageView.this),
@@ -298,7 +298,7 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
     }
 
     @Override
-    public void onScale(float scaleFactor, float focusX, float focusY) {
+    public boolean onScale(float scaleFactor, float focusX, float focusY) {
         if ((getScale() < mMaxScale || scaleFactor < 1f) && (getScale() > mMinScale || scaleFactor > 1f)) {
             if (mScaleChangeListener != null) {
                 mScaleChangeListener.onScaleChange(scaleFactor, focusX, focusY);
@@ -309,7 +309,9 @@ public class ZoomageView extends android.support.v7.widget.AppCompatImageView im
             //setTranslationY(focusY);
             setScaleX(scaleFactor);
             setScaleY(scaleFactor);
+            return true;
         }
+        return false;
     }
 
     @Override

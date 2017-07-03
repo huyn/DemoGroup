@@ -16,8 +16,12 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 
 import com.huyn.demogroup.R;
+import com.huyn.demogroup.crop.motion.MotionGestureDetector;
+import com.huyn.demogroup.crop.motion.OnMotionGestureListener;
+import com.huyn.demogroup.crop.motion.OnMotionListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +32,7 @@ import java.util.List;
  * This view is used for drawing the overlay on top of the image. It may have frame, crop guidelines and dimmed area.
  * This must have LAYER_TYPE_SOFTWARE to draw itself properly.
  */
-public class CropRectView extends View {
+public class CropRectView extends View implements OnMotionGestureListener {
 
     public static final boolean DEFAULT_SHOW_CROP_FRAME = true;
     public static final boolean DEFAULT_SHOW_CROP_GRID = true;
@@ -37,6 +41,14 @@ public class CropRectView extends View {
 
     private final RectF mCropViewRect = new RectF();
     private final RectF mTempRect = new RectF();
+
+    private static final int EDGE_NONE = -1;
+    private static final int EDGE_LEFT = 0;
+    private static final int EDGE_RIGHT = 1;
+    private static final int EDGE_BOTH = 2;
+    private static int SINGLE_TOUCH = 1;
+
+    private int mScrollEdge = EDGE_BOTH;
 
     protected int mThisWidth, mThisHeight;
     protected float[] mCropGridCorners;
@@ -67,6 +79,14 @@ public class CropRectView extends View {
 
     private OverlayViewChangeListener mCallback;
 
+    private boolean mDraggingRect = false;
+
+    private MotionGestureDetector mScaleDragDetector;
+    private boolean mAllowParentInterceptOnEdge = true;
+    private boolean mBlockParentIntercept = false;
+
+    private OnMotionListener mScaleListener;
+
     private boolean mShouldSetupCropBounds;
 
     {
@@ -82,6 +102,10 @@ public class CropRectView extends View {
         mRecommendRect.add(new RectF(100, 100, 400, 400));
     }
 
+    public void setOnScaleListener(OnMotionListener listener) {
+        mScaleListener = listener;
+    }
+
     public CropRectView(Context context) {
         this(context, null);
     }
@@ -94,6 +118,8 @@ public class CropRectView extends View {
         super(context, attrs, defStyle);
         processStyledAttributes();
         init();
+        // Create Gesture Detectors...
+        mScaleDragDetector = new MotionGestureDetector(context, this);
     }
 
     public OverlayViewChangeListener getOverlayViewChangeListener() {
@@ -247,6 +273,8 @@ public class CropRectView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(mMultiTouch)
+            return;
         drawCropGrid(canvas);
         drawOk(canvas);
         drawRecommend(canvas);
@@ -286,17 +314,17 @@ public class CropRectView extends View {
         canvas.drawBitmap(mOk, mOkX, mOkY, null);
     }
 
+    private boolean mMultiTouch = false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
         boolean isCropViewRectBlank = mCropViewRect.isEmpty();
-        /*if (mCropViewRect.isEmpty()) {
-            showRect(x, y);
-            return false;
-        }*/
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
 
-        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
+        if (action == MotionEvent.ACTION_DOWN) {
+            mMultiTouch = false;
+            mDraggingRect = false;
             if(isCropViewRectBlank) {
                 RectF rectF = getCurrentCropRect(x, y);
                 if(rectF != null) {
@@ -304,61 +332,88 @@ public class CropRectView extends View {
                 } else {
                     showRect(x, y);
                 }
-                return false;
-            }
-            mCurrentTouchCornerIndex = getCurrentTouchIndex(x, y);
-            boolean shouldHandle = mCurrentTouchCornerIndex != -1;
-            if(!shouldHandle) {
-                //check if ok is clicked
-                if(x >= mOkX - mBitmapW/2 && x <= mOkX + mBitmapW*3/2
-                        && y >= mOkY - mBitmapH/2 && y <= mOkY + mBitmapH*3/2)
-                    mDownEventTimeMills = System.currentTimeMillis();
-                    shouldHandle = true;
-            }
-            if (!shouldHandle) {
-                mPreviousTouchX = -1;
-                mPreviousTouchY = -1;
-            } else if (mPreviousTouchX < 0) {
+
                 mPreviousTouchX = x;
                 mPreviousTouchY = y;
-            }
-            return shouldHandle;
-        }
-
-        if(isCropViewRectBlank)
-            return false;
-
-        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_MOVE) {
-            if (event.getPointerCount() == 1) {
-                if(mCurrentTouchCornerIndex != -1) {
-                    x = Math.min(Math.max(x, getPaddingLeft()), getWidth() - getPaddingRight());
-                    y = Math.min(Math.max(y, getPaddingTop()), getHeight() - getPaddingBottom());
-
-                    updateCropViewRect(x, y);
-
+                mCurrentTouchCornerIndex = 8;
+                //return true;
+            } else {
+                mCurrentTouchCornerIndex = getCurrentTouchIndex(x, y);
+                boolean shouldHandle = mCurrentTouchCornerIndex != -1;
+                if (!shouldHandle) {
+                    mPreviousTouchX = -1;
+                    mPreviousTouchY = -1;
+                    clear();
+                } else if (mPreviousTouchX < 0) {
                     mPreviousTouchX = x;
                     mPreviousTouchY = y;
                 }
-                return true;
             }
+            //return shouldHandle;
+            //return true;
         }
 
-        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
-            if(System.currentTimeMillis() - mDownEventTimeMills < 200) {
-                if (mCallback != null) {
-                    mCallback.onConfirmed();
-                }
-            }
+        if(action == MotionEvent.ACTION_POINTER_DOWN) {
+            getParent().requestDisallowInterceptTouchEvent(false);
+            mMultiTouch = true;
+
             mPreviousTouchX = -1;
             mPreviousTouchY = -1;
-            mCurrentTouchCornerIndex = -1;
+            clear();
+        }
 
-            if (mCallback != null) {
-                mCallback.onCropRectUpdated(mCropViewRect);
+
+        if(!mMultiTouch) {
+            System.out.println("++++++action..." + action);
+            if (!isCropViewRectBlank) {
+
+                if (action == MotionEvent.ACTION_MOVE) {
+                    if (event.getPointerCount() == 1) {
+                        if (mCurrentTouchCornerIndex != -1) {
+                            x = Math.min(Math.max(x, getPaddingLeft()), getWidth() - getPaddingRight());
+                            y = Math.min(Math.max(y, getPaddingTop()), getHeight() - getPaddingBottom());
+
+                            mDraggingRect = true;
+                            updateCropViewRect(x, y);
+
+                            mPreviousTouchX = x;
+                            mPreviousTouchY = y;
+                            //return true;
+                        }
+                    }
+                }
+
+                if (action == MotionEvent.ACTION_UP) {
+                    if (mDraggingRect) {
+                        mDraggingRect = false;
+                        postInvalidate();
+                    }
+                    mPreviousTouchX = -1;
+                    mPreviousTouchY = -1;
+                    mCurrentTouchCornerIndex = -1;
+
+                    if (mCallback != null) {
+                        mCallback.onCropRectUpdated(mCropViewRect);
+                    }
+                }
             }
         }
 
-        return false;
+        // Try the Scale/Drag detector
+        boolean handled = false;
+        if (mScaleDragDetector != null) {
+            boolean wasScaling = mScaleDragDetector.isScaling();
+            boolean wasDragging = mScaleDragDetector.isDragging();
+
+            handled = mScaleDragDetector.onTouchEvent(event);
+
+            boolean didntScale = !wasScaling && !mScaleDragDetector.isScaling();
+            boolean didntDrag = !wasDragging && !mScaleDragDetector.isDragging();
+
+            mBlockParentIntercept = didntScale && didntDrag;
+        }
+
+        return handled;
     }
 
     /**
@@ -651,4 +706,61 @@ public class CropRectView extends View {
         mCropGridColumnCount = DEFAULT_CROP_GRID_COLUMN_COUNT;
     }
 
+    @Override
+    public void onDragStart() {
+        if(mScaleListener != null)
+            mScaleListener.onDragStart();
+    }
+
+    @Override
+    public void onDrag(float dx, float dy) {
+        if (mScaleDragDetector.isScaling()) {
+            return; // Do not drag if we are already scaling
+        }
+
+        //do drag
+        if(mScaleListener != null)
+            mScaleListener.onDrag(dx, dy);
+
+        /*
+         * Here we decide whether to let the parent to start taking
+         * over the touch event.
+         *
+         * First we check whether this function is enabled. We never want the
+         * parent to take over if we're scaling. We then check the edge we're
+         * on, and the direction of the scroll (i.e. if we're pulling against
+         * the edge, aka 'overscrolling', let the parent take over).
+         */
+        ViewParent parent = getParent();
+        if (mAllowParentInterceptOnEdge && !mScaleDragDetector.isScaling() && !mBlockParentIntercept) {
+            if (mScrollEdge == EDGE_BOTH
+                    || (mScrollEdge == EDGE_LEFT && dx >= 1f)
+                    || (mScrollEdge == EDGE_RIGHT && dx <= -1f)) {
+                if (parent != null) {
+                    parent.requestDisallowInterceptTouchEvent(false);
+                }
+            }
+        } else {
+            if (parent != null) {
+                parent.requestDisallowInterceptTouchEvent(true);
+            }
+        }
+    }
+
+    @Override
+    public void onDragEnd() {
+        if(mScaleListener != null)
+            mScaleListener.onRelease();
+    }
+
+    @Override
+    public void onFling(float startX, float startY, float velocityX, float velocityY) {
+
+    }
+
+    @Override
+    public void onScale(float scaleFactor, float focusX, float focusY) {
+        if(mScaleListener != null)
+            mScaleListener.onScale(scaleFactor, focusX, focusY);
+    }
 }
