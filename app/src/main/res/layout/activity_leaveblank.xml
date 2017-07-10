@@ -1,0 +1,68 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <com.huyn.demogroup.leaveblank.PhotoView
+        android:id="@+id/photoview"
+        android:layout_width="300dip"
+        android:layout_height="300dip"
+        android:background="#ffffff"
+        android:layout_centerInParent="true" />
+
+    <LinearLayout
+        android:id="@+id/layout_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingRight="10dip"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/size_11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="1:1"/>
+
+        <Button
+            android:id="@+id/size_43"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="4:3"/>
+
+        <Button
+            android:id="@+id/size_34"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="3:4"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingRight="10dip"
+        android:layout_above="@id/layout_size">
+
+        <Button
+            android:id="@+id/type_blank"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="留白"/>
+
+        <Button
+            android:id="@+id/type_fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:text="填充"/>
+
+    </LinearLayout>
+
+</RelativeLayout>
