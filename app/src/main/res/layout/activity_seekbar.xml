@@ -29,11 +29,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
         app:tsb_max="100"
-        app:tsb_min="0"
+        app:tsb_min="-100"
         app:tsb_second_track_color="@color/color_red"
         app:tsb_thumb_radius="8dip"
         app:tsb_toast_text_color="@color/color_green"
-        app:tsb_toast_text_size="14sp" />
+        app:tsb_toast_text_size="14sp"
+        app:tsb_start="center"/>
 
     <FrameLayout
         android:layout_width="80dip"

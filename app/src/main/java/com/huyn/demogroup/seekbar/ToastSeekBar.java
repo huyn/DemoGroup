@@ -32,7 +32,7 @@ public class ToastSeekBar extends View {
 
     private float mMin; // min
     private float mMax; // max
-    private float mProgress; // real time value
+    private float mProgress=0; // real time value
     private int mTrackSize; // height of right-track(on the right of thumb)
     private int mSecondTrackSize; // height of left-track(on the left of thumb)
     private int mThumbRadius; // radius of thumb
@@ -53,6 +53,8 @@ public class ToastSeekBar extends View {
     private int mTextSpace; // space between text and track
     private boolean triggerBubbleShowing;
     private boolean isTouchToSeek; // touch anywhere on track to quickly seek
+
+    private int mStartFrom = 0;
 
     private OnProgressChangedListener mProgressListener; // progress changing listener
     private float mLeft; // space between left of track and left of the view
@@ -85,7 +87,7 @@ public class ToastSeekBar extends View {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ToastSeekBar, defStyleAttr, 0);
         mMin = a.getFloat(R.styleable.ToastSeekBar_tsb_min, 0.0f);
         mMax = a.getFloat(R.styleable.ToastSeekBar_tsb_max, 100.0f);
-        mProgress = a.getFloat(R.styleable.ToastSeekBar_tsb_progress, mMin);
+        mProgress = a.getFloat(R.styleable.ToastSeekBar_tsb_progress, 0);
         mTrackSize = a.getDimensionPixelSize(R.styleable.ToastSeekBar_tsb_track_size, minHeight);
         mSecondTrackSize = a.getDimensionPixelSize(R.styleable.ToastSeekBar_tsb_second_track_size, minHeight);
         if(mSecondTrackSize < mTrackSize)
@@ -105,6 +107,9 @@ public class ToastSeekBar extends View {
         mAnimDuration = duration < 0 ? 200 : duration;
         isAlwaysShowBubble = a.getBoolean(R.styleable.ToastSeekBar_tsb_always_show_bubble, false);
         isTouchToSeek = a.getBoolean(R.styleable.ToastSeekBar_tsb_touch_to_seek, true);
+
+        mStartFrom = a.getInteger(R.styleable.ToastSeekBar_tsb_start, 0);
+
         a.recycle();
 
         mPaint = new Paint();
@@ -232,15 +237,24 @@ public class ToastSeekBar extends View {
             mThumbCenterX = mTrackLength / mDelta * (mProgress - mMin) + xLeft;
         }
 
-        // draw track
-        mPaint.setColor(mSecondTrackColor);
-        mPaint.setStrokeWidth(mSecondTrackSize);
-        canvas.drawLine(xLeft, yTop, mThumbCenterX, yTop, mPaint);
-
         // draw second track
         mPaint.setColor(mTrackColor);
         mPaint.setStrokeWidth(mTrackSize);
-        canvas.drawLine(mThumbCenterX, yTop, xRight, yTop, mPaint);
+        //canvas.drawLine(mThumbCenterX, yTop, xRight, yTop, mPaint);
+        canvas.drawLine(xLeft, yTop, xRight, yTop, mPaint);
+
+        // draw track
+        mPaint.setColor(mSecondTrackColor);
+        mPaint.setStrokeWidth(mSecondTrackSize);
+        if(mStartFrom == 1) {
+            float xCenter = (mRight + mLeft)/2;
+            if(xCenter < mThumbCenterX)
+                canvas.drawLine(xCenter, yTop, mThumbCenterX, yTop, mPaint);
+            else
+                canvas.drawLine(mThumbCenterX, yTop, xCenter, yTop, mPaint);
+        } else {
+            canvas.drawLine(xLeft, yTop, mThumbCenterX, yTop, mPaint);
+        }
 
         // draw thumb
         mPaint.setColor(mThumbColor);
