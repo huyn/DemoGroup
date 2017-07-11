@@ -121,6 +121,10 @@
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait"
             android:theme="@style/customTheme" />
+        <activity android:name=".freechild.FreeChildActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/customTheme" />
     </application>
 
     <permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>

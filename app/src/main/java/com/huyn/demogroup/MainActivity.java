@@ -14,6 +14,7 @@ import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
 import com.huyn.demogroup.crop.CropActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
+import com.huyn.demogroup.freechild.FreeChildActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
 import com.huyn.demogroup.leaveblank.LeaveBlankActivity;
 import com.huyn.demogroup.mask.TestMaskActivity;
@@ -178,6 +179,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, LeaveBlankActivity.class));
+            }
+        });
+
+        findViewById(R.id.click_freechild).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, FreeChildActivity.class));
             }
         });
         //printCacheDirs();

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package com.huyn.demogroup.leaveblank;
 
-interface OnGestureListener {
+public interface OnGestureListener {
 
     void onDrag(float dx, float dy);
 

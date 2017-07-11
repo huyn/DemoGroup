@@ -15,6 +15,12 @@
         tools:context="com.huyn.demogroup.MainActivity">
 
         <Button
+            android:id="@+id/click_freechild"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FreeChild" />
+
+        <Button
             android:id="@+id/click_leaveblank"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -20,7 +20,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.view.View;
 
-class Compat {
+public class Compat {
 
     private static final int SIXTY_FPS_INTERVAL = 1000 / 60;
 
@@ -33,7 +33,7 @@ class Compat {
     }
 
     @TargetApi(16)
-    private static void postOnAnimationJellyBean(View view, Runnable runnable) {
+    public static void postOnAnimationJellyBean(View view, Runnable runnable) {
         view.postOnAnimation(runnable);
     }
 }

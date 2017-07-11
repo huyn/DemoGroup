@@ -1,0 +1,78 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff0000">
+
+    <com.huyn.demogroup.freechild.FixedFrameLayout
+        android:id="@+id/framelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff"
+        android:layout_margin="50dip">
+
+        <com.huyn.demogroup.freechild.FreeImageView
+            android:id="@+id/image"
+            android:layout_width="500dip"
+            android:layout_height="500dip"
+            android:scaleType="centerCrop"
+            android:background="#ffff00"
+            android:src="@drawable/wallpaper" />
+
+    </com.huyn.demogroup.freechild.FixedFrameLayout>
+
+    <Button
+        android:id="@+id/move_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="left move" />
+
+    <Button
+        android:id="@+id/move_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="right move" />
+
+    <Button
+        android:id="@+id/resize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="resize" />
+
+    <Button
+        android:id="@+id/leftblank"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="留白"
+        android:layout_above="@id/move_left" />
+
+    <Button
+        android:id="@+id/fill"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="填充"
+        android:layout_alignBaseline="@id/leftblank"
+        android:layout_toRightOf="@id/leftblank" />
+
+    <Button
+        android:id="@+id/size11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1:1"
+        android:layout_above="@id/leftblank" />
+
+    <Button
+        android:id="@+id/size43"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4:3"
+        android:layout_alignBaseline="@id/size11"
+        android:layout_toRightOf="@id/size11" />
+
+
+</RelativeLayout>
