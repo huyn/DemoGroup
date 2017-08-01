@@ -14,6 +14,11 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context="com.huyn.demogroup.MainActivity">
         <Button
+            android:id="@+id/click_lottie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LottieSample" />
+        <Button
             android:id="@+id/click_pathcrop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
