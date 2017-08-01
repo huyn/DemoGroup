@@ -21,6 +21,7 @@ import com.huyn.demogroup.mask.TestMaskActivity;
 import com.huyn.demogroup.opengl.TutorialPartOne;
 import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
+import com.huyn.demogroup.pathcrop.PathCropActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
 import com.huyn.demogroup.rectscale.RectScaleActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
@@ -188,6 +189,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, FreeChildActivity.class));
             }
         });
+
+        findViewById(R.id.click_pathcrop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PathCropActivity.class));
+            }
+        });
+
         //printCacheDirs();
     }
 

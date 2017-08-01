@@ -1,0 +1,22 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="RtlHardcoded"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/crop_start"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:src="@drawable/wallpaper"
+        android:scaleType="centerInside"/>
+
+    <ImageView
+        android:id="@+id/crop_result"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:src="@drawable/wallpaper"
+        android:scaleType="centerInside"/>
+
+</LinearLayout>
