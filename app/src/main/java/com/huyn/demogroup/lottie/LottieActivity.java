@@ -2,6 +2,7 @@ package com.huyn.demogroup.lottie;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -36,6 +37,13 @@ public class LottieActivity extends Activity {
             @Override
             public void onAnimationStart(Animator animation) {
                 System.out.println("++++onAnimationStart");
+            }
+        });
+        //animationView.loop(true);
+        animationView.addAnimatorUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                //findViewById(R.id.wipablelayout).invalidate();
             }
         });
         animationView.playAnimation();

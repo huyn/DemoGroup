@@ -12,6 +12,7 @@ import com.huyn.demogroup.bahavior.BehaviorActivity;
 import com.huyn.demogroup.bitmapshader.BitmapShaderActivity;
 import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
 import com.huyn.demogroup.crop.CropActivity;
+import com.huyn.demogroup.drawbitmap.DrawbitmapActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.freechild.FreeChildActivity;
@@ -204,7 +205,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, LottieActivity.class));
             }
         });
-
+        findViewById(R.id.click_drawbitmap).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, DrawbitmapActivity.class));
+            }
+        });
         //printCacheDirs();
     }
 
