@@ -7,5 +7,6 @@
 .idea/
 /src/androidTest/
 /src/test/
+app/obj
 app/src/androidTest/
 app/src/test/
