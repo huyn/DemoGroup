@@ -3,6 +3,7 @@ package com.huyn.demogroup.outline;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -28,6 +29,7 @@ public class OutlineView extends View {
 
     private Bitmap mBg;
     private Bitmap mMask;
+    private Bitmap mShareBitmap;
     private Bitmap mResult, mOutline;
 
     private Paint mDstPaint, mSrcPaint;
@@ -46,6 +48,8 @@ public class OutlineView extends View {
         super(context, attrs, defStyleAttr);
 
         mBg = BitmapFactory.decodeResource(getResources(), R.drawable.pic_origin);
+
+        mShareBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic_break);
 
         InputStream is= null;
         try {
@@ -183,13 +187,18 @@ public class OutlineView extends View {
 
         if(mLinearGradient == null) {
             mLinearGradient = new LinearGradient(getWidth() / 2, -getHeight(), getWidth() / 2, 0, new int[]{0x66ff3366, 0x66ff3366, 0xffff3366, 0x00ff3366}, new float[]{0, 0.95f, 0.975f, 1f}, Shader.TileMode.CLAMP);
-            mSrcPaint.setShader(mLinearGradient);
+//            mSrcPaint.setShader(mLinearGradient);
             mGradientMatrix = new Matrix();
+            bitmapShader = new BitmapShader(mShareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         }
+
+        mSrcPaint.setShader(bitmapShader);
+        canvas.drawRect(0, 0, getWidth(), pos - getHeight()*0.025f, mSrcPaint);
 
         //每帧刷新
         mGradientMatrix.setTranslate(0, pos);
         mLinearGradient.setLocalMatrix(mGradientMatrix);
+        mSrcPaint.setShader(mLinearGradient);
         canvas.drawRect(0, 0, getWidth(), pos, mSrcPaint);
         pos++;
 
@@ -205,4 +214,5 @@ public class OutlineView extends View {
     private int pos = 0;
     private LinearGradient mLinearGradient;
     private Matrix mGradientMatrix;
+    private BitmapShader bitmapShader;
 }

@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:ignore="RtlHardcoded">
+
+    <ImageView
+        android:id="@+id/break_img"
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:scaleType="centerCrop"
+        android:src="@drawable/pic_origin"/>
+
+    <Button android:id="@+id/break_reset"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:padding="10dip"
+        android:gravity="center"
+        android:text="RESET" />
+
+</LinearLayout>

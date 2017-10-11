@@ -16,6 +16,7 @@ import com.huyn.demogroup.drawbitmap.DrawbitmapActivity;
 import com.huyn.demogroup.emoji.EmojiActivity;
 import com.huyn.demogroup.event.TestEventDeliveryActivity;
 import com.huyn.demogroup.freechild.FreeChildActivity;
+import com.huyn.demogroup.glassbreak.BreakGlassActivity;
 import com.huyn.demogroup.infinitecycleviewpager.screens.InfiniteCyclerViewPagerActivity;
 import com.huyn.demogroup.leaveblank.LeaveBlankActivity;
 import com.huyn.demogroup.lottie.LottieActivity;
@@ -223,6 +224,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, OutlineActivity.class));
+            }
+        });
+        findViewById(R.id.click_breakglass).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, BreakGlassActivity.class));
             }
         });
         //printCacheDirs();
