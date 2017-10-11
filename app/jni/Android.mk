@@ -39,8 +39,8 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
-LOCAL_MODULE    := bitherjni
-LOCAL_SRC_FILES := bitherlibjni.c
+LOCAL_MODULE    := jnisave
+LOCAL_SRC_FILES := nativesave.cpp
 LOCAL_SHARED_LIBRARIES := libjpegbither 
 LOCAL_LDLIBS := -ljnigraphics -llog  
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \

@@ -6,6 +6,9 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.huyn.demogroup.R;
@@ -16,7 +19,8 @@ import com.huyn.demogroup.R;
 
 public class LottieActivity extends Activity {
 
-    private LottieAnimationView animationView;
+    private LottieAnimationView animationView, animationView2;
+    private RecyclerView mStyleList;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,5 +51,26 @@ public class LottieActivity extends Activity {
             }
         });
         animationView.playAnimation();
+
+        animationView2 = (LottieAnimationView) findViewById(R.id.animation_view2);
+        animationView2.loop(true);
+        animationView2.playAnimation();
+
+        findViewById(R.id.animation_toggle).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(animationView2.isAnimating())
+                    animationView2.cancelAnimation();
+                else
+                    animationView2.playAnimation();
+            }
+        });
+
+        mStyleList = (RecyclerView) findViewById(R.id.stylize_list);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mStyleList.setLayoutManager(manager);
+        mStyleList.addItemDecoration(new SpaceDecroation(this));
+        mStyleList.setAdapter(new SimpleAdapter(this));
     }
 }

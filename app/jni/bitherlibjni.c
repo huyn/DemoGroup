@@ -109,10 +109,10 @@ int generateJPEG(BYTE* data, int w, int h, int quality,
 	}
 
 	if (jcs.optimize_coding) {
-			LOGI("optimize==ture");
-		} else {
-			LOGI("optimize==false");
-		}
+        LOGI("optimize==ture");
+    } else {
+        LOGI("optimize==false");
+    }
 	jpeg_finish_compress(&jcs);
 	jpeg_destroy_compress(&jcs);
 	fclose(f);

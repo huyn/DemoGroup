@@ -32,7 +32,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="#ffffff">
 
         <HorizontalScrollView
@@ -140,6 +140,24 @@
         </HorizontalScrollView>
 
     </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/stylize_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animation_view2"
+        android:layout_width="277px"
+        android:layout_height="332px"
+        app:lottie_fileName="xuanran.json"
+        app:lottie_imageAssetsFolder="images_render" />
+
+    <Button
+        android:id="@+id/animation_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="toggle" />
 
 
 </LinearLayout>

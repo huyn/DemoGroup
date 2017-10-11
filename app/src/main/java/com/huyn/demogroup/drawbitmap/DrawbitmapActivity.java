@@ -4,12 +4,10 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.media.MediaScannerConnection;
@@ -22,9 +20,10 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.huyn.demogroup.R;
+import com.huyn.demogroup.jni.NativeJniUtil;
 import com.huyn.demogroup.util.FileUtil;
 
-import java.io.File;
+import net.bither.util.NativeUtil;
 
 /**
  * Created by huyaonan on 2017/8/15.
@@ -39,7 +38,8 @@ public class DrawbitmapActivity extends Activity {
         findViewById(R.id.drawbitmap).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DrawTask().execute();
+                new DrawTask("test_drawbitmap", "room").execute();
+                //new DrawTask(R.drawable.test_new, "girl").execute();
             }
         });
 
@@ -72,18 +72,45 @@ public class DrawbitmapActivity extends Activity {
         return false;
     }
 
+    /**
+     * 加载lib下两个so文件
+     */
+    static {
+        System.loadLibrary("jpegbither");
+        System.loadLibrary("bitherjni");
+//        System.loadLibrary("jnisave");
+    }
+
     private class DrawTask extends AsyncTask<Void, Void, Boolean> {
+
+        private String fileName;
+        private String tag;
+        public DrawTask(String fileName, String tag) {
+            this.fileName = fileName;
+            this.tag = tag;
+        }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test_drawbitmap);
-                String targetSrc = getCacheFile();
-                FileUtil.saveBitmap(bitmap, targetSrc);
-                saveAndStartScanner(DrawbitmapActivity.this, targetSrc);
-
+                Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" + fileName + ".jpg");
                 int targetW = bitmap.getWidth();
                 int targetH = bitmap.getHeight();
+                System.out.println("++++" + targetW + "/" + targetH);
+
+                String targetSrc = getCacheFile(1);
+                long startTime = System.currentTimeMillis();
+                FileUtil.saveBitmap(bitmap, targetSrc);
+                System.out.println("skia save cost : " + (System.currentTimeMillis() - startTime));
+                saveAndStartScanner(DrawbitmapActivity.this, targetSrc);
+
+                startTime = System.currentTimeMillis();
+                String jniPath = getCacheFile(2);
+                String result = NativeUtil.saveBitmap(bitmap, 100, jniPath, true);
+//                int result = NativeJniUtil.save(bitmap, getCacheFile(2), 100);
+                System.out.println("libjpeg save cost : " + (System.currentTimeMillis() - startTime) + "/result : " + result);
+                saveAndStartScanner(DrawbitmapActivity.this, jniPath);
+
                 Bitmap dst = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888);
                 Canvas canvas = new Canvas(dst);
 
@@ -94,10 +121,9 @@ public class DrawbitmapActivity extends Activity {
                 canvas.restore();
 
                 /**保存一张无水印的*/
-                String target = getCacheFile();
+                String target = getCacheFile(3);
                 System.out.println("++++targetfile : " + target);
                 FileUtil.saveBitmap(dst, target);
-
                 saveAndStartScanner(DrawbitmapActivity.this, target);
 
                 bitmap.recycle();
@@ -129,13 +155,17 @@ public class DrawbitmapActivity extends Activity {
             }
         }
 
-        private String getCacheFile() {
+        private String getCacheFile(int type) {
 //            String root = Environment.getExternalStorageDirectory() + "/demogroup/";
 //            File rootFile = new File(root);
 //            if(!rootFile.exists())
 //                rootFile.mkdirs();
 //            return root + System.currentTimeMillis() + ".jpg";
-            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" + System.currentTimeMillis() + ".jpg";
+            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" + type + "_" + System.currentTimeMillis() + ".jpg";
+        }
+
+        private String getCacheFileAsPng(int type) {
+            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" + type + "_" + System.currentTimeMillis() + ".png";
         }
     }
 

@@ -25,6 +25,7 @@ import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
 import com.huyn.demogroup.pathcrop.PathCropActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
+import com.huyn.demogroup.pulltodismiss.PullToDismissActivity;
 import com.huyn.demogroup.rectscale.RectScaleActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.scale.ScaleDemoActivity;
@@ -209,6 +210,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, DrawbitmapActivity.class));
+            }
+        });
+        findViewById(R.id.click_pull2dismiss).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PullToDismissActivity.class));
             }
         });
         //printCacheDirs();

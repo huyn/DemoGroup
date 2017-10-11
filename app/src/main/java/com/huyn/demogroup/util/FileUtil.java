@@ -45,7 +45,7 @@ public class FileUtil {
             b.compress(Bitmap.CompressFormat.PNG, 100, bos);
             bos.flush();
             bos.close();
-            b.recycle();
+//            b.recycle();
             return target.getPath();
         } catch (Exception e) {
             e.printStackTrace();
