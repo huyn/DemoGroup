@@ -21,6 +21,7 @@ import com.huyn.demogroup.leaveblank.LeaveBlankActivity;
 import com.huyn.demogroup.lottie.LottieActivity;
 import com.huyn.demogroup.mask.TestMaskActivity;
 import com.huyn.demogroup.opengl.TutorialPartOne;
+import com.huyn.demogroup.outline.OutlineActivity;
 import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
 import com.huyn.demogroup.pathcrop.PathCropActivity;
@@ -216,6 +217,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, PullToDismissActivity.class));
+            }
+        });
+        findViewById(R.id.click_outline).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, OutlineActivity.class));
             }
         });
         //printCacheDirs();
