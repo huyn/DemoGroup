@@ -6,6 +6,11 @@
     android:background="@color/color_gray"
     tools:ignore="RtlHardcoded">
 
+    <ImageView android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/pic_origin" />
+
     <com.huyn.demogroup.outline.OutlineView
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

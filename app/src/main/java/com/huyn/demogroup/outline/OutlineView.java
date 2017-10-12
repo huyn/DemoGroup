@@ -182,7 +182,7 @@ public class OutlineView extends View {
 //        mSrcPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
 //        canvas.drawBitmap(mSrcBitmap,0,0,mSrcPaint);
 
-        canvas.drawBitmap(mBg,0,0,null);
+        //canvas.drawBitmap(mBg,0,0,null);
 
 
         if(mLinearGradient == null) {
@@ -190,6 +190,22 @@ public class OutlineView extends View {
 //            mSrcPaint.setShader(mLinearGradient);
             mGradientMatrix = new Matrix();
             bitmapShader = new BitmapShader(mShareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+
+            float ratio = getWidth()*1f/getHeight();
+            float bRatio = mShareBitmap.getWidth()*1f/mShareBitmap.getHeight();
+            float scale;
+            if(ratio > bRatio) {
+                scale = getWidth() * 1f/ mShareBitmap.getWidth();
+            } else {
+                scale = getHeight() * 1f / mShareBitmap.getHeight();
+            }
+            if(scale > 1) {
+                // shader的变换矩阵，我们这里主要用于放大或者缩小
+                Matrix mMatrix = new Matrix();
+                mMatrix.setScale(scale, scale);
+                // 设置变换矩阵
+                bitmapShader.setLocalMatrix(mMatrix);
+            }
         }
 
         mSrcPaint.setShader(bitmapShader);
@@ -200,7 +216,7 @@ public class OutlineView extends View {
         mLinearGradient.setLocalMatrix(mGradientMatrix);
         mSrcPaint.setShader(mLinearGradient);
         canvas.drawRect(0, 0, getWidth(), pos, mSrcPaint);
-        pos++;
+        pos+=5;
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setDither(true);
