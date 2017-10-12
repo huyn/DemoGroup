@@ -27,6 +27,7 @@ import com.huyn.demogroup.paint.PaintShaderActivity;
 import com.huyn.demogroup.particle.ParticleEffectsActivity;
 import com.huyn.demogroup.pathcrop.PathCropActivity;
 import com.huyn.demogroup.photo.PhotoMainActivity;
+import com.huyn.demogroup.poplayout.BubblePopupActivity;
 import com.huyn.demogroup.pulltodismiss.PullToDismissActivity;
 import com.huyn.demogroup.rectscale.RectScaleActivity;
 import com.huyn.demogroup.relativetop.RelativeTopActivity;
@@ -230,6 +231,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, BreakGlassActivity.class));
+            }
+        });
+        findViewById(R.id.click_popup).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, BubblePopupActivity.class));
             }
         });
         //printCacheDirs();
