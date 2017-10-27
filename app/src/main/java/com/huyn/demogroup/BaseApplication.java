@@ -16,6 +16,8 @@ public class BaseApplication extends Application {
 
         Static.CONTEXT = this;
         Static.INFLATER = LayoutInflater.from(this);
+
+        DemoCrashHandler.getInstance(this).init(this, BuildConfig.DEBUG);
     }
 
 }
