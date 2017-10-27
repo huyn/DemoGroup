@@ -1,5 +1,6 @@
 package com.huyn.demogroup.perspective;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -158,8 +159,10 @@ public class PerspectiveView extends View {
         super.onDraw(canvas);
 
         synchronized (mSvgLock) {
-            canvas.drawBitmap(mBitmap, new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), new RectF(0, 0, getWidth(), getHeight()), null);
             final int count = paths.size();
+            if(count == 0)
+                return;
+            canvas.drawBitmap(mBitmap, new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), new RectF(0, 0, getWidth(), getHeight()), null);
             mPath.reset();
             for (int i = 0; i < count; i++) {
                 final SvgUtils.SvgPath svgPath = paths.get(i);
@@ -217,7 +220,7 @@ public class PerspectiveView extends View {
     public void startAnim(final List<List<SvgUtils.SvgPath>> paths) {
         final int size = paths.size();
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(1000);
+        animator.setDuration(600);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -228,6 +231,27 @@ public class PerspectiveView extends View {
                     index = size - 1;
 
                 update(paths.get(index));
+            }
+        });
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                paths.clear();
+                invalidate();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
             }
         });
         animator.start();

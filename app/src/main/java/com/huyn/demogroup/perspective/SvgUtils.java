@@ -77,7 +77,7 @@ public class SvgUtils {
 
             @Override
             public void drawPath(Path path, Paint paint) {
-                System.out.println("+++++draw path...");
+                System.out.println("+++++draw path..." + getWidth() + "/" + getHeight());
                 Path dst = new Path();
 
                 //noinspection deprecation
@@ -104,10 +104,16 @@ public class SvgUtils {
             return;
         final RectF viewBox = mSvg.getDocumentViewBox();
 
-        final float scale = Math.min(width / (viewBox.width()), height / (viewBox.height()));
-        canvas.translate((width - viewBox.width() * scale) / 2.0f,
-                (height - viewBox.height() * scale) / 2.0f);
-        canvas.scale(scale, scale);
+        float wScale = width / (viewBox.width());
+        float hScale = height / (viewBox.height());
+
+        System.out.println("=======scale : " + wScale + '/' + hScale);
+        System.out.println("=======width/height : " + width + '/' + height);
+        System.out.println("=======viewBox.width/height : " + viewBox.width() + '/' + viewBox.height());
+
+        canvas.translate((width - viewBox.width() * wScale) / 2.0f,
+                (height - viewBox.height() * hScale) / 2.0f);
+        canvas.scale(wScale, hScale);
 
         mSvg.renderToCanvas(canvas);
     }
