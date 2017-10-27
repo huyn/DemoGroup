@@ -14,6 +14,10 @@ import com.caverock.androidsvg.PreserveAspectRatio;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,20 @@ public class SvgUtils {
         }
     }
 
+    public void load(File file) {
+        if (mSvg != null)
+            return;
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            mSvg = SVG.getFromInputStream(inputStream);
+            mSvg.setDocumentPreserveAspectRatio(PreserveAspectRatio.UNSCALED);
+        } catch (SVGParseException e) {
+            Log.e(LOG_TAG, "Could not load specified SVG resource", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Render the svg to canvas and catch all the paths while rendering.
      *
@@ -61,7 +79,6 @@ public class SvgUtils {
      * @return All the paths from the svg.
      */
     public List<SvgPath> getPathsForViewport(final int width, final int height) {
-        long getPathStart = System.currentTimeMillis();
         Canvas canvas = new Canvas() {
             private final Matrix mMatrix = new Matrix();
 
@@ -77,7 +94,6 @@ public class SvgUtils {
 
             @Override
             public void drawPath(Path path, Paint paint) {
-                System.out.println("+++++draw path..." + getWidth() + "/" + getHeight());
                 Path dst = new Path();
 
                 //noinspection deprecation
@@ -88,7 +104,6 @@ public class SvgUtils {
         };
 
         rescaleCanvas(width, height, canvas);
-        System.out.println("+++++get path cost : " + (System.currentTimeMillis() - getPathStart));
         return mPaths;
     }
 
@@ -106,10 +121,6 @@ public class SvgUtils {
 
         float wScale = width / (viewBox.width());
         float hScale = height / (viewBox.height());
-
-        System.out.println("=======scale : " + wScale + '/' + hScale);
-        System.out.println("=======width/height : " + width + '/' + height);
-        System.out.println("=======viewBox.width/height : " + viewBox.width() + '/' + viewBox.height());
 
         canvas.translate((width - viewBox.width() * wScale) / 2.0f,
                 (height - viewBox.height() * hScale) / 2.0f);

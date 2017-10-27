@@ -2,6 +2,7 @@ package com.huyn.demogroup.perspective;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.view.View;
 
@@ -25,7 +26,8 @@ public class PerspectiveActivity extends Activity {
             @Override
             public void onClick(View v) {
                 //loadSvgRes();
-                loadSvgResList();
+                //loadSvgResList();
+                getSvgFromStorage();
             }
         });
     }
@@ -81,6 +83,31 @@ public class PerspectiveActivity extends Activity {
 
             }
         });
+    }
+
+    private void loadSvgFileList(String path) {
+        SvgMaskLoader.loadSvgMasks(path, mPerspectiveView.getWidth(), mPerspectiveView.getHeight(), new SvgMaskLoader.OnSvgLoadListener() {
+            @Override
+            public void onSvgLoadSuccess(List<SvgUtils.SvgPath> paths) {
+            }
+
+            @Override
+            public void onSvgListLoadSuccess(List<List<SvgUtils.SvgPath>> paths) {
+                mPerspectiveView.startAnim(paths);
+            }
+
+            @Override
+            public void onSvgLoadFail() {
+
+            }
+        });
+    }
+
+    private void getSvgFromStorage() {
+        String path = Environment.getExternalStorageDirectory() + "/svg.zip";
+        String unzipped = ZipUtil.unzip(path);
+
+        loadSvgFileList(unzipped);
     }
 
 }
