@@ -37,10 +37,6 @@ public class PerspectiveView extends View {
      */
     private Paint mPaintCover;
     /**
-     * Utils to catch the paths from the svg.
-     */
-    private final SvgUtils svgUtils = new SvgUtils();
-    /**
      * All the paths provided to the view. Both from Path and Svg.
      */
     private List<SvgUtils.SvgPath> paths = new ArrayList<>();
@@ -189,6 +185,7 @@ public class PerspectiveView extends View {
                 @Override
                 public void run() {
 
+                    SvgUtils svgUtils = new SvgUtils();
                     svgUtils.load(getContext(), svgResourceId);
 
                     synchronized (mSvgLock) {
@@ -209,6 +206,11 @@ public class PerspectiveView extends View {
             }, "SVG Loader");
             mLoader.start();
         }
+    }
+
+    public void update(List<SvgUtils.SvgPath> paths) {
+        this.paths = paths;
+        invalidate();
     }
 
 }
