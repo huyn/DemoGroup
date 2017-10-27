@@ -1,5 +1,6 @@
 package com.huyn.demogroup.perspective;
 
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -211,6 +212,25 @@ public class PerspectiveView extends View {
     public void update(List<SvgUtils.SvgPath> paths) {
         this.paths = paths;
         invalidate();
+    }
+
+    public void startAnim(final List<List<SvgUtils.SvgPath>> paths) {
+        final int size = paths.size();
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(1000);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+
+                int index = (int) (value * size);
+                if(index >= size -1)
+                    index = size - 1;
+
+                update(paths.get(index));
+            }
+        });
+        animator.start();
     }
 
 }
