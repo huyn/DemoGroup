@@ -35,6 +35,7 @@ import com.huyn.demogroup.relativetop.RelativeTopActivity;
 import com.huyn.demogroup.scale.ScaleDemoActivity;
 import com.huyn.demogroup.seekbar.SeekSampleActivity;
 import com.huyn.demogroup.sensor.RotationVectorDemo;
+import com.huyn.demogroup.shadow.ShadowActivity;
 import com.huyn.demogroup.zoomageview.ZoomageViewActivity;
 
 import java.io.File;
@@ -244,6 +245,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, PerspectiveActivity.class));
+            }
+        });
+        findViewById(R.id.click_shadow).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ShadowActivity.class));
             }
         });
         //printCacheDirs();

@@ -1,0 +1,20 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dip"
+    android:background="#ffffff"
+    android:orientation="vertical">
+
+    <com.huyn.demogroup.shadow.ShadowLinearLayout
+        android:layout_width="100dip"
+        android:layout_height="100dip"
+        android:orientation="vertical">
+
+        <View android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:background="#ffff00ff" />
+
+    </com.huyn.demogroup.shadow.ShadowLinearLayout>
+
+
+</LinearLayout>
