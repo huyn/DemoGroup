@@ -8,6 +8,7 @@
     <com.huyn.demogroup.shadow.ShadowLinearLayout
         android:layout_width="100dip"
         android:layout_height="100dip"
+        android:padding="5dip"
         android:orientation="vertical">
 
         <View android:layout_width="50dip"
@@ -18,6 +19,12 @@
 
     <com.huyn.demogroup.shadow.ShadowView
         android:layout_width="match_parent"
-        android:layout_height="300dip" />
+        android:layout_height="300dip"
+        android:visibility="gone" />
+
+    <com.huyn.demogroup.shadow.ShadowFrameLayout
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:padding="10dip"/>
 
 </LinearLayout>
