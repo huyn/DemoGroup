@@ -16,5 +16,8 @@
 
     </com.huyn.demogroup.shadow.ShadowLinearLayout>
 
+    <com.huyn.demogroup.shadow.ShadowView
+        android:layout_width="match_parent"
+        android:layout_height="300dip" />
 
 </LinearLayout>
