@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * extract images test : http://bigflake.com/mediacodec/#ExtractMpegFramesTest
  * Created by huyaonan on 2017/12/11.
  */
 
@@ -52,7 +51,8 @@ public class VideoEncodeAndDecodeExampleActivity extends Activity {
     private void encodeToVideo() {
         new Thread(new Runnable() {
             public void run() {
-                new EncodeToVideo().encode(new File(Environment.getExternalStorageDirectory() + "/testvideo"), Environment.getExternalStorageDirectory() + "/testvideo/result.mp4");
+                new EncodeVideoByMediaCodec().testEncodeVideoToMp4();
+                //new EncodeToVideo().encode(new File(Environment.getExternalStorageDirectory() + "/testvideo"), Environment.getExternalStorageDirectory() + "/testvideo/result.mp4");
             }
         }).start();
     }

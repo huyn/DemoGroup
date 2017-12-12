@@ -29,6 +29,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
+ * extract images test : http://bigflake.com/mediacodec/#ExtractMpegFramesTest
  * Created by huyaonan on 2017/12/12.
  */
 
