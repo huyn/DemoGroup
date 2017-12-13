@@ -39,6 +39,14 @@ public class EncodeVideoByOpenGL {
     private static final int FRAME_RATE = 20;               // 15fps
     private static final int IFRAME_INTERVAL = 10;          // 10 seconds between I-frames
 
+    // RGB color values for generated frames
+    private static final int TEST_R0 = 0;
+    private static final int TEST_G0 = 136;
+    private static final int TEST_B0 = 0;
+    private static final int TEST_R1 = 236;
+    private static final int TEST_G1 = 50;
+    private static final int TEST_B1 = 186;
+
     // size of a frame, in pixels
     private int mWidth = -1;
     private int mHeight = -1;
@@ -107,7 +115,7 @@ public class EncodeVideoByOpenGL {
 
                 Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
                 // Generate a new frame of input.
-                generateSurfaceFrame(bitmap);
+                generateSurfaceFrame(i, bitmap);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
 
                 // Submit it to the encoder.  The eglSwapBuffers call will block if the input
@@ -290,8 +298,32 @@ public class EncodeVideoByOpenGL {
         }
     }
 
-    private void generateSurfaceFrame(Bitmap bitmap) {
+    private void generateSurfaceFrame(int frameIndex, Bitmap bitmap) {
         mInputSurface.drawImage(bitmap);
+        drawRect(frameIndex);
+    }
+
+    private void drawRect(int frameIndex) {
+        frameIndex %= 8;
+
+        int startX, startY;
+        if (frameIndex < 4) {
+            // (0,0) is bottom-left in GL
+            startX = frameIndex * (mWidth / 4);
+            startY = mHeight / 2;
+        } else {
+            startX = (7 - frameIndex) * (mWidth / 4);
+            startY = 0;
+        }
+
+        GLES20.glClearColor(TEST_R0 / 255.0f, TEST_G0 / 255.0f, TEST_B0 / 255.0f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+        GLES20.glScissor(startX, startY, mWidth / 4, mHeight / 2);
+        GLES20.glClearColor(TEST_R1 / 255.0f, TEST_G1 / 255.0f, TEST_B1 / 255.0f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
     }
 
     /**
@@ -325,6 +357,29 @@ public class EncodeVideoByOpenGL {
         int mWidth;
         int mHeight;
 
+        private final FloatBuffer mGLCubeBuffer;
+        private final FloatBuffer mGLTextureBuffer;
+        static final float CUBE[] = {
+                -1.0f, -1.0f,
+                1.0f, -1.0f,
+                -1.0f, 1.0f,
+                1.0f, 1.0f,
+        };
+        private Rotation mRotation;
+        private boolean mFlipHorizontal;
+        private boolean mFlipVertical;
+
+        private int mOutputWidth;
+        private int mOutputHeight;
+        private int mImageWidth;
+        private int mImageHeight;
+
+        private float mBackgroundRed = 0;
+        private float mBackgroundGreen = 0;
+        private float mBackgroundBlue = 0;
+
+        private int mTextureID = OpenGlUtils.NO_TEXTURE;
+
         /**
          * Creates a CodecInputSurface from a Surface.
          */
@@ -333,12 +388,76 @@ public class EncodeVideoByOpenGL {
                 throw new NullPointerException();
             }
             mSurface = surface;
-            mWidth = w;
-            mHeight = h;
+            mOutputWidth = w;
+            mOutputHeight = h;
+            mImageWidth = w;
+            mImageHeight = h;
+
+            mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            mGLCubeBuffer.put(CUBE).position(0);
+
+            mGLTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            setRotation(Rotation.NORMAL, false, false);
 
             eglSetup();
             makeCurrent();
             setup();
+        }
+
+        public void setRotation(final Rotation rotation) {
+            mRotation = rotation;
+            adjustImageScaling();
+        }
+
+        public void setRotation(final Rotation rotation,
+                                final boolean flipHorizontal, final boolean flipVertical) {
+            mFlipHorizontal = flipHorizontal;
+            mFlipVertical = flipVertical;
+            setRotation(rotation);
+        }
+
+
+        private void adjustImageScaling() {
+            float outputWidth = mOutputWidth;
+            float outputHeight = mOutputHeight;
+            if (mRotation == Rotation.ROTATION_270 || mRotation == Rotation.ROTATION_90) {
+                outputWidth = mOutputHeight;
+                outputHeight = mOutputWidth;
+            }
+
+            float ratio1 = outputWidth / mImageWidth;
+            float ratio2 = outputHeight / mImageHeight;
+            float ratioMax = Math.max(ratio1, ratio2);
+            int imageWidthNew = Math.round(mImageWidth * ratioMax);
+            int imageHeightNew = Math.round(mImageHeight * ratioMax);
+
+            float ratioWidth = imageWidthNew / outputWidth;
+            float ratioHeight = imageHeightNew / outputHeight;
+
+            float[] cube = CUBE;
+            float[] textureCords = TextureRotationUtil.getRotation(mRotation, mFlipHorizontal, mFlipVertical);
+
+            float distHorizontal = (1 - 1 / ratioWidth) / 2;
+            float distVertical = (1 - 1 / ratioHeight) / 2;
+            textureCords = new float[]{
+                    addDistance(textureCords[0], distHorizontal), addDistance(textureCords[1], distVertical),
+                    addDistance(textureCords[2], distHorizontal), addDistance(textureCords[3], distVertical),
+                    addDistance(textureCords[4], distHorizontal), addDistance(textureCords[5], distVertical),
+                    addDistance(textureCords[6], distHorizontal), addDistance(textureCords[7], distVertical),
+            };
+
+            mGLCubeBuffer.clear();
+            mGLCubeBuffer.put(cube).position(0);
+            mGLTextureBuffer.clear();
+            mGLTextureBuffer.put(textureCords).position(0);
+        }
+
+        private float addDistance(float coordinate, float distance) {
+            return coordinate == 0.0f ? distance : 1 - distance;
         }
 
         /**
@@ -346,10 +465,8 @@ public class EncodeVideoByOpenGL {
          */
         private void setup() {
             mTextureRender = new STextureRender(mWidth, mHeight);
-            mTextureRender.surfaceCreated();
-            mTextureRender.surfaceChanged();
-
-            if (VERBOSE) Log.d(TAG, "textureID=" + mTextureRender.getTextureId());
+            onSurfaceCreated();
+            onSurfaceChanged();
         }
 
         /**
@@ -399,6 +516,18 @@ public class EncodeVideoByOpenGL {
             checkEglError("eglCreateWindowSurface");
         }
 
+        public void onSurfaceCreated() {
+            GLES20.glClearColor(mBackgroundRed, mBackgroundGreen, mBackgroundBlue, 1);
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+            mTextureRender.surfaceCreated();
+        }
+
+        public void onSurfaceChanged() {
+            GLES20.glViewport(0, 0, mWidth, mHeight);
+            mTextureRender.surfaceChanged();
+            adjustImageScaling();
+        }
+
         /**
          * Discards all resources held by this class, notably the EGL context.  Also releases the
          * Surface that was passed to our constructor.
@@ -427,7 +556,14 @@ public class EncodeVideoByOpenGL {
          * Draws the data from SurfaceTexture onto the current EGL surface.
          */
         public void drawImage(Bitmap bitmap) {
-            mTextureRender.drawFrame(bitmap);
+            checkGlError("onDrawFrame clear");
+            mTextureID = OpenGlUtils.loadTexture(bitmap, mTextureID, false);
+            if (bitmap != null) {
+                bitmap.recycle();
+            }
+
+            checkGlError("loadTexture");
+            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer);
         }
 
         /**
@@ -471,81 +607,47 @@ public class EncodeVideoByOpenGL {
      * Code for rendering a texture onto a surface using OpenGL ES 2.0.
      */
     private static class STextureRender {
-        private static final int FLOAT_SIZE_BYTES = 4;
-        private static final int TRIANGLE_VERTICES_DATA_STRIDE_BYTES = 5 * FLOAT_SIZE_BYTES;
-        private static final int TRIANGLE_VERTICES_DATA_POS_OFFSET = 0;
-        private static final int TRIANGLE_VERTICES_DATA_UV_OFFSET = 3;
-        private final float[] mTriangleVerticesData = {
-                // X, Y, Z, U, V
-                -1.0f, -1.0f, 0, 0.f, 0.f,
-                1.0f, -1.0f, 0, 1.f, 0.f,
-                -1.0f,  1.0f, 0, 0.f, 1.f,
-                1.0f,  1.0f, 0, 1.f, 1.f,
-        };
 
-        private FloatBuffer mTriangleVertices;
-
-        private static final String VERTEX_SHADER =
-                "uniform mat4 uMVPMatrix;\n" +
-                        "uniform mat4 uSTMatrix;\n" +
-                        "attribute vec4 aPosition;\n" +
-                        "attribute vec4 aTextureCoord;\n" +
-                        "varying vec2 vTextureCoord;\n" +
-                        "void main() {\n" +
-                        "    gl_Position = uMVPMatrix * aPosition;\n" +
-                        "    vTextureCoord = (uSTMatrix * aTextureCoord).xy;\n" +
-                        "}\n";
-
-        private static final String FRAGMENT_SHADER =
-                "#extension GL_OES_EGL_image_external : require\n" +
-                        "precision mediump float;\n" +      // highp here doesn't seem to matter
-                        "varying vec2 vTextureCoord;\n" +
-                        "uniform samplerExternalOES sTexture;\n" +
-                        "void main() {\n" +
-                        "    gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
-                        "}\n";
+        public static final String NO_FILTER_VERTEX_SHADER = "" +
+                "attribute vec4 position;\n" +
+                "attribute vec4 inputTextureCoordinate;\n" +
+                " \n" +
+                "varying vec2 textureCoordinate;\n" +
+                " \n" +
+                "void main()\n" +
+                "{\n" +
+                "    gl_Position = position;\n" +
+                "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+                "}";
+        public static final String NO_FILTER_FRAGMENT_SHADER = "" +
+                "varying highp vec2 textureCoordinate;\n" +
+                " \n" +
+                "uniform sampler2D inputImageTexture;\n" +
+                " \n" +
+                "void main()\n" +
+                "{\n" +
+                "     gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+                "}";
 
         private int mProgram;
-        private int mTextureID = OpenGlUtils.NO_TEXTURE;
-        private int muMVPMatrixHandle;
-        private int muSTMatrixHandle;
-        private int maPositionHandle;
-        private int maTextureHandle;
         private int mWidth, mHeight;
 
+        protected int mGLAttribPosition;
+        protected int mGLUniformTexture;
+        protected int mGLAttribTextureCoordinate;
+
         public STextureRender(int w, int h) {
-            mTriangleVertices = ByteBuffer.allocateDirect(
-                    mTriangleVerticesData.length * FLOAT_SIZE_BYTES)
-                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
-            mTriangleVertices.put(mTriangleVerticesData).position(0);
             mWidth = w;
             mHeight = h;
-        }
-
-        public int getTextureId() {
-            return mTextureID;
         }
 
         /**
          * Draws the external texture in SurfaceTexture onto the current EGL surface.
          */
-        public void drawFrame(Bitmap bitmap) {
+        public void drawFrame(int mTextureID, final FloatBuffer cubeBuffer, final FloatBuffer textureBuffer) {
             checkGlError("onDrawFrame start");
+
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-            checkGlError("onDrawFrame clear");
-            mTextureID = OpenGlUtils.loadTexture(bitmap, mTextureID, false);
-            if (bitmap != null) {
-                bitmap.recycle();
-            }
-
-            checkGlError("loadTexture");
-            // (optional) clear to green so we can see if we're failing to set pixels
-            GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-            checkGlError("glClearColor");
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-            checkGlError("glClear");
-
             GLES20.glUseProgram(mProgram);
             checkGlError("glUseProgram");
 
@@ -554,23 +656,22 @@ public class EncodeVideoByOpenGL {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID);
 
             checkGlError("glBindTexture");
-            mTriangleVertices.position(TRIANGLE_VERTICES_DATA_POS_OFFSET);
-            GLES20.glVertexAttribPointer(maPositionHandle, 3, GLES20.GL_FLOAT, false,
-                    TRIANGLE_VERTICES_DATA_STRIDE_BYTES, mTriangleVertices);
-            checkGlError("glVertexAttribPointer maPosition");
-            GLES20.glEnableVertexAttribArray(maPositionHandle);
-            checkGlError("glEnableVertexAttribArray maPositionHandle");
 
-            mTriangleVertices.position(TRIANGLE_VERTICES_DATA_UV_OFFSET);
-            GLES20.glVertexAttribPointer(maTextureHandle, 2, GLES20.GL_FLOAT, false,
-                    TRIANGLE_VERTICES_DATA_STRIDE_BYTES, mTriangleVertices);
-            checkGlError("glVertexAttribPointer maTextureHandle");
-            GLES20.glEnableVertexAttribArray(maTextureHandle);
-            checkGlError("glEnableVertexAttribArray maTextureHandle");
-
+            cubeBuffer.position(0);
+            GLES20.glVertexAttribPointer(mGLAttribPosition, 2, GLES20.GL_FLOAT, false, 0, cubeBuffer);
+            GLES20.glEnableVertexAttribArray(mGLAttribPosition);
+            textureBuffer.position(0);
+            GLES20.glVertexAttribPointer(mGLAttribTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0,
+                    textureBuffer);
+            GLES20.glEnableVertexAttribArray(mGLAttribTextureCoordinate);
+            if (mTextureID != OpenGlUtils.NO_TEXTURE) {
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID);
+                GLES20.glUniform1i(mGLUniformTexture, 0);
+            }
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-            checkGlError("glDrawArrays");
-
+            GLES20.glDisableVertexAttribArray(mGLAttribPosition);
+            GLES20.glDisableVertexAttribArray(mGLAttribTextureCoordinate);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         }
 
@@ -578,40 +679,29 @@ public class EncodeVideoByOpenGL {
          * Initializes GL state.  Call this after the EGL surface has been created and made current.
          */
         public void surfaceCreated() {
-            mProgram = OpenGlUtils.loadProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+            mProgram = OpenGlUtils.loadProgram(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER);
 
             if (mProgram == 0) {
                 throw new RuntimeException("failed creating program");
             }
 
-            maPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-            checkLocation(maPositionHandle, "aPosition");
-            maTextureHandle = GLES20.glGetAttribLocation(mProgram, "aTextureCoord");
-            checkLocation(maTextureHandle, "aTextureCoord");
-
-            muMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-            checkLocation(muMVPMatrixHandle, "uMVPMatrix");
-            muSTMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uSTMatrix");
-            checkLocation(muSTMatrixHandle, "uSTMatrix");
+            mGLAttribPosition = GLES20.glGetAttribLocation(mProgram, "position");
+            mGLUniformTexture = GLES20.glGetUniformLocation(mProgram, "inputImageTexture");
+            mGLAttribTextureCoordinate = GLES20.glGetAttribLocation(mProgram,
+                    "inputTextureCoordinate");
         }
 
         public void surfaceChanged() {
-            GLES20.glViewport(0, 0, mWidth, mHeight);
             GLES20.glUseProgram(mProgram);
         }
 
-        public void checkGlError(String op) {
-            int error;
-            while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-                Log.e(TAG, op + ": glError " + error);
-                throw new RuntimeException(op + ": glError " + error);
-            }
-        }
+    }
 
-        public static void checkLocation(int location, String label) {
-            if (location < 0) {
-                throw new RuntimeException("Unable to locate '" + label + "' in program");
-            }
+    public static void checkGlError(String op) {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+            Log.e(TAG, op + ": glError " + error);
+            throw new RuntimeException(op + ": glError " + error);
         }
     }
 
