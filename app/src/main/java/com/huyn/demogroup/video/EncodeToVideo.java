@@ -24,11 +24,14 @@ public class EncodeToVideo {
         long start = System.currentTimeMillis();
         SequenceEncoder se = null;
         try {
-            se = SequenceEncoder.create24Fps(new File(targetFile));
+            File target = new File(targetFile);
+            if(target.exists())
+                target.delete();
+            se = SequenceEncoder.create24Fps(target);
             File[] files = srcFile.listFiles();
             int count = 0;
             for (int i = 0;i<files.length; i++) {
-                if (!files[i].exists() || !files[i].getName().endsWith(".png"))
+                if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
                     break;
                 System.out.println("encode : " + files[i].getName());
 
