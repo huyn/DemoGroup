@@ -7,12 +7,6 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
-import android.opengl.EGL14;
-import android.opengl.EGLConfig;
-import android.opengl.EGLContext;
-import android.opengl.EGLDisplay;
-import android.opengl.EGLExt;
-import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.os.Build;
 import android.util.Log;
@@ -23,6 +17,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLSurface;
+import javax.microedition.khronos.opengles.GL10;
+
+import static javax.microedition.khronos.egl.EGL10.EGL_ALPHA_SIZE;
+import static javax.microedition.khronos.egl.EGL10.EGL_BLUE_SIZE;
+import static javax.microedition.khronos.egl.EGL10.EGL_DEFAULT_DISPLAY;
+import static javax.microedition.khronos.egl.EGL10.EGL_DEPTH_SIZE;
+import static javax.microedition.khronos.egl.EGL10.EGL_GREEN_SIZE;
+import static javax.microedition.khronos.egl.EGL10.EGL_NONE;
+import static javax.microedition.khronos.egl.EGL10.EGL_NO_CONTEXT;
+import static javax.microedition.khronos.egl.EGL10.EGL_RED_SIZE;
+import static javax.microedition.khronos.egl.EGL10.EGL_STENCIL_SIZE;
 
 /**
  * http://bigflake.com/mediacodec/EncodeAndMuxTest.java.txt
@@ -37,15 +48,7 @@ public class EncodeVideoByOpenGL {
     // parameters for the encoder
     private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
     private static final int FRAME_RATE = 20;               // 15fps
-    private static final int IFRAME_INTERVAL = 10;          // 10 seconds between I-frames
-
-    // RGB color values for generated frames
-    private static final int TEST_R0 = 0;
-    private static final int TEST_G0 = 136;
-    private static final int TEST_B0 = 0;
-    private static final int TEST_R1 = 236;
-    private static final int TEST_G1 = 50;
-    private static final int TEST_B1 = 186;
+    private static final int IFRAME_INTERVAL = 1;          // 10 seconds between I-frames
 
     // size of a frame, in pixels
     private int mWidth = -1;
@@ -78,7 +81,6 @@ public class EncodeVideoByOpenGL {
             for (int i = 0;i<files.length; i++) {
                 if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
                     break;
-                System.out.println("encode : " + files[i].getName());
 
                 Bitmap frame = BitmapFactory.decodeFile(files[i].getAbsolutePath());
                 if(frame != null) {
@@ -113,9 +115,11 @@ public class EncodeVideoByOpenGL {
                 // Feed any pending encoder output into the muxer.
                 drainEncoder(false);
 
+                System.out.println("encode : " + files[i].getName());
+
                 Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
                 // Generate a new frame of input.
-                generateSurfaceFrame(i, bitmap);
+                generateSurfaceFrame(bitmap);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
 
                 // Submit it to the encoder.  The eglSwapBuffers call will block if the input
@@ -298,32 +302,8 @@ public class EncodeVideoByOpenGL {
         }
     }
 
-    private void generateSurfaceFrame(int frameIndex, Bitmap bitmap) {
+    private void generateSurfaceFrame(Bitmap bitmap) {
         mInputSurface.drawImage(bitmap);
-        drawRect(frameIndex);
-    }
-
-    private void drawRect(int frameIndex) {
-        frameIndex %= 8;
-
-        int startX, startY;
-        if (frameIndex < 4) {
-            // (0,0) is bottom-left in GL
-            startX = frameIndex * (mWidth / 4);
-            startY = mHeight / 2;
-        } else {
-            startX = (7 - frameIndex) * (mWidth / 4);
-            startY = 0;
-        }
-
-        GLES20.glClearColor(TEST_R0 / 255.0f, TEST_G0 / 255.0f, TEST_B0 / 255.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-
-        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-        GLES20.glScissor(startX, startY, mWidth / 4, mHeight / 2);
-        GLES20.glClearColor(TEST_R1 / 255.0f, TEST_G1 / 255.0f, TEST_B1 / 255.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
     }
 
     /**
@@ -351,9 +331,14 @@ public class EncodeVideoByOpenGL {
         private STextureRender mTextureRender;
         private Surface mSurface;
 
-        private EGLDisplay mEGLDisplay = EGL14.EGL_NO_DISPLAY;
-        private EGLContext mEGLContext = EGL14.EGL_NO_CONTEXT;
-        private EGLSurface mEGLSurface = EGL14.EGL_NO_SURFACE;
+        EGL10 mEGL;
+        EGLDisplay mEGLDisplay;
+        EGLConfig[] mEGLConfigs;
+        EGLConfig mEGLConfig;
+        EGLContext mEGLContext;
+        EGLSurface mEGLSurface;
+        GL10 mGL;
+
         int mWidth;
         int mHeight;
 
@@ -392,6 +377,8 @@ public class EncodeVideoByOpenGL {
             mOutputHeight = h;
             mImageWidth = w;
             mImageHeight = h;
+            mWidth = w;
+            mHeight = h;
 
             mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                     .order(ByteOrder.nativeOrder())
@@ -404,7 +391,7 @@ public class EncodeVideoByOpenGL {
             setRotation(Rotation.NORMAL, false, false);
 
             eglSetup();
-            makeCurrent();
+            //makeCurrent();
             setup();
         }
 
@@ -473,47 +460,85 @@ public class EncodeVideoByOpenGL {
          * Prepares EGL.  We want a GLES 2.0 context and a surface that supports recording.
          */
         private void eglSetup() {
-            mEGLDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-            if (mEGLDisplay == EGL14.EGL_NO_DISPLAY) {
-                throw new RuntimeException("unable to get EGL14 display");
-            }
             int[] version = new int[2];
-            if (!EGL14.eglInitialize(mEGLDisplay, version, 0, version, 1)) {
-                throw new RuntimeException("unable to initialize EGL14");
-            }
 
-            // Configure EGL for recording and OpenGL ES 2.0.
-            int[] attribList = {
-                    EGL14.EGL_RED_SIZE, 8,
-                    EGL14.EGL_GREEN_SIZE, 8,
-                    EGL14.EGL_BLUE_SIZE, 8,
-                    EGL14.EGL_ALPHA_SIZE, 8,
-                    EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                    EGL_RECORDABLE_ANDROID, 1,
-                    EGL14.EGL_NONE
-            };
-            EGLConfig[] configs = new EGLConfig[1];
-            int[] numConfigs = new int[1];
-            EGL14.eglChooseConfig(mEGLDisplay, attribList, 0, configs, 0, configs.length,
-                    numConfigs, 0);
-            checkEglError("eglCreateContext RGB888+recordable ES2");
+            // No error checking performed, minimum required code to elucidate logic
+            mEGL = (EGL10) EGLContext.getEGL();
+            mEGLDisplay = mEGL.eglGetDisplay(EGL_DEFAULT_DISPLAY);
+            mEGL.eglInitialize(mEGLDisplay, version);
+            mEGLConfig = chooseConfig(); // Choosing a config is a little more
+            // complicated
 
-            // Configure context for OpenGL ES 2.0.
+            // mEGLContext = mEGL.eglCreateContext(mEGLDisplay, mEGLConfig,
+            // EGL_NO_CONTEXT, null);
+            int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
             int[] attrib_list = {
-                    EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
-                    EGL14.EGL_NONE
+                    EGL_CONTEXT_CLIENT_VERSION, 2,
+                    EGL10.EGL_NONE
             };
-            mEGLContext = EGL14.eglCreateContext(mEGLDisplay, configs[0], EGL14.EGL_NO_CONTEXT,
-                    attrib_list, 0);
-            checkEglError("eglCreateContext");
+            mEGLContext = mEGL.eglCreateContext(mEGLDisplay, mEGLConfig, EGL_NO_CONTEXT, attrib_list);
 
             // Create a window surface, and attach it to the Surface we received.
             int[] surfaceAttribs = {
-                    EGL14.EGL_NONE
+                    EGL10.EGL_NONE
             };
-            mEGLSurface = EGL14.eglCreateWindowSurface(mEGLDisplay, configs[0], mSurface,
-                    surfaceAttribs, 0);
-            checkEglError("eglCreateWindowSurface");
+            mEGLSurface = mEGL.eglCreateWindowSurface(mEGLDisplay, mEGLConfig, mSurface,
+                    surfaceAttribs);
+
+            mEGL.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext);
+
+            mGL = (GL10) mEGLContext.getGL();
+        }
+
+        private EGLConfig chooseConfig() {
+            int[] attribList = new int[] {
+                    EGL_DEPTH_SIZE, 0,
+                    EGL_STENCIL_SIZE, 0,
+                    EGL_RED_SIZE, 8,
+                    EGL_GREEN_SIZE, 8,
+                    EGL_BLUE_SIZE, 8,
+                    EGL_ALPHA_SIZE, 8,
+                    EGL10.EGL_RENDERABLE_TYPE, 4,
+                    EGL_NONE
+            };
+
+            // No error checking performed, minimum required code to elucidate logic
+            // Expand on this logic to be more selective in choosing a configuration
+            int[] numConfig = new int[1];
+            mEGL.eglChooseConfig(mEGLDisplay, attribList, null, 0, numConfig);
+            int configSize = numConfig[0];
+            mEGLConfigs = new EGLConfig[configSize];
+            mEGL.eglChooseConfig(mEGLDisplay, attribList, mEGLConfigs, configSize, numConfig);
+
+            listConfig();
+
+            return mEGLConfigs[0]; // Best match is probably the first configuration
+        }
+
+        private void listConfig() {
+            Log.i(TAG, "Config List {");
+
+            for (EGLConfig config : mEGLConfigs) {
+                int d, s, r, g, b, a;
+
+                // Expand on this logic to dump other attributes
+                d = getConfigAttrib(config, EGL_DEPTH_SIZE);
+                s = getConfigAttrib(config, EGL_STENCIL_SIZE);
+                r = getConfigAttrib(config, EGL_RED_SIZE);
+                g = getConfigAttrib(config, EGL_GREEN_SIZE);
+                b = getConfigAttrib(config, EGL_BLUE_SIZE);
+                a = getConfigAttrib(config, EGL_ALPHA_SIZE);
+                Log.i(TAG, "    <d,s,r,g,b,a> = <" + d + "," + s + "," +
+                        r + "," + g + "," + b + "," + a + ">");
+            }
+
+            Log.i(TAG, "}");
+        }
+
+        private int getConfigAttrib(final EGLConfig config, final int attribute) {
+            int[] value = new int[1];
+            return mEGL.eglGetConfigAttrib(mEGLDisplay, config,
+                    attribute, value) ? value[0] : 0;
         }
 
         public void onSurfaceCreated() {
@@ -533,23 +558,21 @@ public class EncodeVideoByOpenGL {
          * Surface that was passed to our constructor.
          */
         public void release() {
-            if (mEGLDisplay != EGL14.EGL_NO_DISPLAY) {
-                EGL14.eglMakeCurrent(mEGLDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE,
-                        EGL14.EGL_NO_CONTEXT);
-                EGL14.eglDestroySurface(mEGLDisplay, mEGLSurface);
-                EGL14.eglDestroyContext(mEGLDisplay, mEGLContext);
-                EGL14.eglReleaseThread();
-                EGL14.eglTerminate(mEGLDisplay);
+            try {
+                mEGL.eglMakeCurrent(mEGLDisplay, EGL10.EGL_NO_SURFACE,
+                        EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
+
+                mEGL.eglDestroySurface(mEGLDisplay, mEGLSurface);
+                mEGL.eglDestroyContext(mEGLDisplay, mEGLContext);
+                mEGL.eglTerminate(mEGLDisplay);
+
+                mSurface.release();
+
+                mTextureRender = null;
+                mSurface = null;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            mSurface.release();
-
-            mEGLDisplay = EGL14.EGL_NO_DISPLAY;
-            mEGLContext = EGL14.EGL_NO_CONTEXT;
-            mEGLSurface = EGL14.EGL_NO_SURFACE;
-
-            mTextureRender = null;
-            mSurface = null;
         }
 
         /**
@@ -570,7 +593,7 @@ public class EncodeVideoByOpenGL {
          * Makes our EGL context and surface current.
          */
         public void makeCurrent() {
-            EGL14.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext);
+            mEGL.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext);
             checkEglError("eglMakeCurrent");
         }
 
@@ -578,7 +601,7 @@ public class EncodeVideoByOpenGL {
          * Calls eglSwapBuffers.  Use this to "publish" the current frame.
          */
         public boolean swapBuffers() {
-            boolean result = EGL14.eglSwapBuffers(mEGLDisplay, mEGLSurface);
+            boolean result = mEGL.eglSwapBuffers(mEGLDisplay, mEGLSurface);
             checkEglError("eglSwapBuffers");
             return result;
         }
@@ -588,19 +611,10 @@ public class EncodeVideoByOpenGL {
          */
         @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
         public void setPresentationTime(long nsecs) {
-            EGLExt.eglPresentationTimeANDROID(mEGLDisplay, mEGLSurface, nsecs);
+            //EGLExt.eglPresentationTimeANDROID(mEGLDisplay, mEGLSurface, nsecs);
             checkEglError("eglPresentationTimeANDROID");
         }
 
-        /**
-         * Checks for EGL errors.  Throws an exception if one is found.
-         */
-        private void checkEglError(String msg) {
-            int error;
-            if ((error = EGL14.eglGetError()) != EGL14.EGL_SUCCESS) {
-                throw new RuntimeException(msg + ": EGL error: 0x" + Integer.toHexString(error));
-            }
-        }
     }
 
         /**
@@ -689,12 +703,22 @@ public class EncodeVideoByOpenGL {
             mGLUniformTexture = GLES20.glGetUniformLocation(mProgram, "inputImageTexture");
             mGLAttribTextureCoordinate = GLES20.glGetAttribLocation(mProgram,
                     "inputTextureCoordinate");
+
+            //GLES20.glUseProgram(mProgram);
         }
 
         public void surfaceChanged() {
             GLES20.glUseProgram(mProgram);
         }
 
+    }
+
+    /**
+     * Checks for EGL errors.  Throws an exception if one is found.
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static void checkEglError(String msg) {
+        checkGlError(msg);
     }
 
     public static void checkGlError(String op) {
