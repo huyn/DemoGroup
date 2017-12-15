@@ -18,7 +18,7 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
-import com.huyn.demogroup.video.glrender.BaseGLRender;
+import com.huyn.demogroup.video.glrender.SegmentGLRender;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,10 +114,11 @@ public class EncodeVideoByOpenGL {
                 System.out.println("encode : " + files[i].getName());
 
                 Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
-                System.out.println("encode success");
+                Bitmap bitmapMask = BitmapFactory.decodeFile(masks[i].getAbsolutePath());
+                System.out.println("encode success..." + bitmapMask.getWidth());
 //                Bitmap bitmap = SegmentUtil.doSegment(files[i], masks[i], styled[i]);
                 // Generate a new frame of input.
-                generateSurfaceFrame(bitmap);
+                generateSurfaceFrame(bitmap, bitmapMask);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
 
                 // Submit it to the encoder.  The eglSwapBuffers call will block if the input
@@ -300,8 +301,8 @@ public class EncodeVideoByOpenGL {
         }
     }
 
-    private void generateSurfaceFrame(Bitmap bitmap) {
-        mInputSurface.drawImage(bitmap);
+    private void generateSurfaceFrame(Bitmap bitmap, Bitmap mask) {
+        mInputSurface.drawImage(bitmap, mask);
     }
 
     /**
@@ -326,7 +327,7 @@ public class EncodeVideoByOpenGL {
     private static class CodecInputSurface {
         private static final int EGL_RECORDABLE_ANDROID = 0x3142;
 
-        private BaseGLRender mTextureRender;
+        private SegmentGLRender mTextureRender;
         private Surface mSurface;
 
         EGLDisplay mEGLDisplay;
@@ -445,7 +446,7 @@ public class EncodeVideoByOpenGL {
          * Creates interconnected instances of TextureRender, SurfaceTexture, and Surface.
          */
         private void setup() {
-            mTextureRender = new BaseGLRender();
+            mTextureRender = new SegmentGLRender();
             onSurfaceCreated();
             onSurfaceChanged();
         }
@@ -540,7 +541,7 @@ public class EncodeVideoByOpenGL {
         /**
          * Draws the data from SurfaceTexture onto the current EGL surface.
          */
-        public void drawImage(Bitmap bitmap) {
+        public void drawImage(Bitmap bitmap, Bitmap mask) {
             checkGlError("onDrawFrame clear");
             mTextureID = OpenGlUtils.loadTexture(bitmap, mTextureID, false);
             if (bitmap != null) {
@@ -550,7 +551,7 @@ public class EncodeVideoByOpenGL {
             checkGlError("loadTexture");
 
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer);
+            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer, mask);
         }
 
         /**
