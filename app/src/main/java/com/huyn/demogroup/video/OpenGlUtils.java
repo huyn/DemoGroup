@@ -106,9 +106,13 @@ public class OpenGlUtils {
     public static int loadShader(final String strSource, final int iType) {
         int[] compiled = new int[1];
         int iShader = GLES20.glCreateShader(iType);
+        checkGlError("glCreateShader type=" + iShader);
         GLES20.glShaderSource(iShader, strSource);
+        checkGlError("glShaderSource");
         GLES20.glCompileShader(iShader);
+        checkGlError("glCompileShader");
         GLES20.glGetShaderiv(iShader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        checkGlError("glGetShaderiv");
         if (compiled[0] == 0) {
             Log.d("Load Shader Failed", "Compilation\n" + GLES20.glGetShaderInfoLog(iShader));
             return 0;
