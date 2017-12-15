@@ -18,7 +18,7 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
-import com.huyn.demogroup.video.glrender.SegmentGLRender;
+import com.huyn.demogroup.video.glrender.SegmentAndMixGLRender;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +40,8 @@ public class EncodeVideoByOpenGL {
     private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
     private static final int FRAME_RATE = 20;               // 20fps
     private static final int IFRAME_INTERVAL = 10;          // 10 seconds between I-frames
+
+    private static final int MAX = 60;
 
     // size of a frame, in pixels
     private int mWidth = -1;
@@ -104,7 +106,9 @@ public class EncodeVideoByOpenGL {
             prepareEncoder();
             mInputSurface.makeCurrent();
 
-            for (int i = 0; i < files.length; i++) {
+            long readTime = 0;
+
+            for (int i = 0; i < files.length && i < MAX; i++) {
                 if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
                     continue;
 
@@ -113,12 +117,15 @@ public class EncodeVideoByOpenGL {
 
                 System.out.println("encode : " + files[i].getName());
 
+                long start = System.currentTimeMillis();
                 Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
                 Bitmap bitmapMask = BitmapFactory.decodeFile(masks[i].getAbsolutePath());
+                Bitmap bitmapStyled = BitmapFactory.decodeFile(styled[i].getAbsolutePath());
+                readTime += System.currentTimeMillis() - start;
                 System.out.println("encode success..." + bitmapMask.getWidth());
 //                Bitmap bitmap = SegmentUtil.doSegment(files[i], masks[i], styled[i]);
                 // Generate a new frame of input.
-                generateSurfaceFrame(bitmap, bitmapMask);
+                generateSurfaceFrame(bitmap, bitmapMask, bitmapStyled);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
 
                 // Submit it to the encoder.  The eglSwapBuffers call will block if the input
@@ -129,6 +136,8 @@ public class EncodeVideoByOpenGL {
                 if (VERBOSE) Log.d(TAG, "sending frame " + i + " to encoder");
                 mInputSurface.swapBuffers();
             }
+
+            System.out.println("++++io cost : " + readTime);
 
             // send end-of-stream to encoder, and drain remaining output
             drainEncoder(true);
@@ -301,8 +310,8 @@ public class EncodeVideoByOpenGL {
         }
     }
 
-    private void generateSurfaceFrame(Bitmap bitmap, Bitmap mask) {
-        mInputSurface.drawImage(bitmap, mask);
+    private void generateSurfaceFrame(Bitmap bitmap, Bitmap mask, Bitmap styled) {
+        mInputSurface.drawImage(bitmap, mask, styled);
     }
 
     /**
@@ -327,7 +336,7 @@ public class EncodeVideoByOpenGL {
     private static class CodecInputSurface {
         private static final int EGL_RECORDABLE_ANDROID = 0x3142;
 
-        private SegmentGLRender mTextureRender;
+        private SegmentAndMixGLRender mTextureRender;
         private Surface mSurface;
 
         EGLDisplay mEGLDisplay;
@@ -446,7 +455,7 @@ public class EncodeVideoByOpenGL {
          * Creates interconnected instances of TextureRender, SurfaceTexture, and Surface.
          */
         private void setup() {
-            mTextureRender = new SegmentGLRender();
+            mTextureRender = new SegmentAndMixGLRender();
             onSurfaceCreated();
             onSurfaceChanged();
         }
@@ -541,7 +550,7 @@ public class EncodeVideoByOpenGL {
         /**
          * Draws the data from SurfaceTexture onto the current EGL surface.
          */
-        public void drawImage(Bitmap bitmap, Bitmap mask) {
+        public void drawImage(Bitmap bitmap, Bitmap mask, Bitmap styled) {
             checkGlError("onDrawFrame clear");
             mTextureID = OpenGlUtils.loadTexture(bitmap, mTextureID, false);
             if (bitmap != null) {
@@ -551,7 +560,7 @@ public class EncodeVideoByOpenGL {
             checkGlError("loadTexture");
 
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer, mask);
+            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer, mask, styled);
         }
 
         /**
