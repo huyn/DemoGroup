@@ -90,9 +90,11 @@ public class VideoEncodeAndDecodeExampleActivity extends Activity {
     private void encodeToVideo() {
         new Thread(new Runnable() {
             public void run() {
-                File src = new File(Environment.getExternalStorageDirectory() + "/video2/styled");
+                File src = new File(Environment.getExternalStorageDirectory() + "/video2");
+                File mask = new File(Environment.getExternalStorageDirectory() + "/video2/segment_out");
+                File styled = new File(Environment.getExternalStorageDirectory() + "/video2/styled");
                 String resultPath = Environment.getExternalStorageDirectory() + "/video2/result_new.mp4";
-                new EncodeVideoByOpenGL().testEncodeVideoToMp4(src, resultPath);
+                new EncodeVideoByOpenGL().testEncodeVideoToMp4(src, mask, styled, resultPath);
                 //new EncodeToVideo().encode(src, resultPath);
 
                 //new EncodeVideoByMediaCodec().testEncodeVideoToMp4();

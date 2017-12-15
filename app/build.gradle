@@ -22,7 +22,10 @@ android {
     }
     sourceSets {
         main {
-            java.srcDirs = ['src/main/java', 'src/main/InfiniteCycleViewPager', 'src/main/subscaleimageview']
+            java.srcDirs = ['src/main/java',
+                            'src/main/InfiniteCycleViewPager',
+                            'src/main/subscaleimageview',
+                            'src/main/gpu']
             jniLibs.srcDirs = ['libs']
             assets.srcDirs = ['src/main/assets']
         }

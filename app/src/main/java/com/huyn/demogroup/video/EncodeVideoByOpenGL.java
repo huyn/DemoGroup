@@ -57,7 +57,7 @@ public class EncodeVideoByOpenGL {
 
     private String outputPath;
 
-    public void testEncodeVideoToMp4(File srcFile, String targetFile) {
+    public void testEncodeVideoToMp4(File srcFile, File maskFile, File styledFile, String targetFile) {
         long start = System.currentTimeMillis();
         try {
             File target = new File(targetFile);
@@ -71,14 +71,16 @@ public class EncodeVideoByOpenGL {
                 if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
                     break;
 
-                Bitmap frame = BitmapFactory.decodeFile(files[i].getAbsolutePath());
-                if(frame != null) {
-                    width = frame.getWidth();
-                    height = frame.getHeight();
-                    break;
+                if(width == 0 || height == 0) {
+                    Bitmap frame = BitmapFactory.decodeFile(files[i].getAbsolutePath());
+                    if (frame != null) {
+                        width = frame.getWidth();
+                        height = frame.getHeight();
+                        break;
+                    }
                 }
             }
-            testEncodeVideoToMp4(width, height, files);
+            testEncodeVideoToMp4(width, height, files, maskFile.listFiles(), styledFile.listFiles());
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "IO", e);
@@ -90,7 +92,7 @@ public class EncodeVideoByOpenGL {
     /**
      * Tests encoding of AVC video from a Surface.  The output is saved as an MP4 file.
      */
-    public void testEncodeVideoToMp4(int width, int height, File[] files) {
+    public void testEncodeVideoToMp4(int width, int height, File[] files, File[] masks, File[] styled) {
         // QVGA at 2Mbps
         mWidth = width;
         mHeight = height;
@@ -101,12 +103,16 @@ public class EncodeVideoByOpenGL {
             mInputSurface.makeCurrent();
 
             for (int i = 0; i < files.length; i++) {
+                if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
+                    continue;
+
                 // Feed any pending encoder output into the muxer.
                 drainEncoder(false);
 
                 System.out.println("encode : " + files[i].getName());
 
-                Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
+                //Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
+                Bitmap bitmap = SegmentUtil.doSegment(files[i], masks[i], styled[i]);
                 // Generate a new frame of input.
                 generateSurfaceFrame(bitmap);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
@@ -436,7 +442,7 @@ public class EncodeVideoByOpenGL {
          * Creates interconnected instances of TextureRender, SurfaceTexture, and Surface.
          */
         private void setup() {
-            mTextureRender = new STextureRender(mWidth, mHeight);
+            mTextureRender = new STextureRender();
             onSurfaceCreated();
             onSurfaceChanged();
         }
@@ -539,6 +545,8 @@ public class EncodeVideoByOpenGL {
             }
 
             checkGlError("loadTexture");
+
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
             mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer);
         }
 
@@ -597,24 +605,18 @@ public class EncodeVideoByOpenGL {
                 "}";
 
         private int mProgram;
-        private int mWidth, mHeight;
 
         protected int mGLAttribPosition;
         protected int mGLUniformTexture;
         protected int mGLAttribTextureCoordinate;
 
-        public STextureRender(int w, int h) {
-            mWidth = w;
-            mHeight = h;
-        }
+        public STextureRender() {}
 
         /**
          * Draws the external texture in SurfaceTexture onto the current EGL surface.
          */
         public void drawFrame(int mTextureID, final FloatBuffer cubeBuffer, final FloatBuffer textureBuffer) {
             checkGlError("onDrawFrame start");
-
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
             GLES20.glUseProgram(mProgram);
             checkGlError("glUseProgram");
 
