@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.huyn.demogroup.anim.ThreeDRotateActivity;
 import com.huyn.demogroup.bahavior.BehaviorActivity;
+import com.huyn.demogroup.bahavior.SnapBehaviorActivity;
 import com.huyn.demogroup.bitmapshader.BitmapShaderActivity;
 import com.huyn.demogroup.clipchild.ClipChildAnimActivity;
 import com.huyn.demogroup.crop.CropActivity;
@@ -258,6 +259,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, VideoEncodeAndDecodeExampleActivity.class));
+            }
+        });
+        findViewById(R.id.click_snap).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SnapBehaviorActivity.class));
             }
         });
         //printCacheDirs();
