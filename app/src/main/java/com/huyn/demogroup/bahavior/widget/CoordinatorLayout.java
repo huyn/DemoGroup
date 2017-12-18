@@ -39,6 +39,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.support.annotation.VisibleForTesting;
+import android.support.design.R;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.os.ParcelableCompat;
@@ -191,9 +192,11 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
     public CoordinatorLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        final TypedArray a = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.CoordinatorLayout,
-                defStyleAttr, android.support.design.R.style.Widget_Design_CoordinatorLayout);
-        final int keylineArrayRes = a.getResourceId(android.support.design.R.styleable.CoordinatorLayout_keylines, 0);
+        ThemeUtils.checkAppCompatTheme(context);
+
+        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CoordinatorLayout,
+                defStyleAttr, R.style.Widget_Design_CoordinatorLayout);
+        final int keylineArrayRes = a.getResourceId(R.styleable.CoordinatorLayout_keylines, 0);
         if (keylineArrayRes != 0) {
             final Resources res = context.getResources();
             mKeylines = res.getIntArray(keylineArrayRes);
@@ -203,7 +206,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
                 mKeylines[i] *= density;
             }
         }
-        mStatusBarBackground = a.getDrawable(android.support.design.R.styleable.CoordinatorLayout_statusBarBackground);
+        mStatusBarBackground = a.getDrawable(R.styleable.CoordinatorLayout_statusBarBackground);
         a.recycle();
 
         setupForInsets();
@@ -2523,29 +2526,29 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
             super(context, attrs);
 
             final TypedArray a = context.obtainStyledAttributes(attrs,
-                    android.support.design.R.styleable.CoordinatorLayout_Layout);
+                    R.styleable.CoordinatorLayout_Layout);
 
             this.gravity = a.getInteger(
-                    android.support.design.R.styleable.CoordinatorLayout_Layout_android_layout_gravity,
+                    R.styleable.CoordinatorLayout_Layout_android_layout_gravity,
                     Gravity.NO_GRAVITY);
-            mAnchorId = a.getResourceId(android.support.design.R.styleable.CoordinatorLayout_Layout_layout_anchor,
+            mAnchorId = a.getResourceId(R.styleable.CoordinatorLayout_Layout_layout_anchor,
                     View.NO_ID);
             this.anchorGravity = a.getInteger(
-                    android.support.design.R.styleable.CoordinatorLayout_Layout_layout_anchorGravity,
+                    R.styleable.CoordinatorLayout_Layout_layout_anchorGravity,
                     Gravity.NO_GRAVITY);
 
-            this.keyline = a.getInteger(android.support.design.R.styleable.CoordinatorLayout_Layout_layout_keyline,
+            this.keyline = a.getInteger(R.styleable.CoordinatorLayout_Layout_layout_keyline,
                     -1);
 
-            insetEdge = a.getInt(android.support.design.R.styleable.CoordinatorLayout_Layout_layout_insetEdge, 0);
+            insetEdge = a.getInt(R.styleable.CoordinatorLayout_Layout_layout_insetEdge, 0);
             dodgeInsetEdges = a.getInt(
-                    android.support.design.R.styleable.CoordinatorLayout_Layout_layout_dodgeInsetEdges, 0);
+                    R.styleable.CoordinatorLayout_Layout_layout_dodgeInsetEdges, 0);
             mBehaviorResolved = a.hasValue(
-                    android.support.design.R.styleable.CoordinatorLayout_Layout_layout_behavior);
-//            if (mBehaviorResolved) {
-//                mBehavior = parseBehavior(context, attrs, a.getString(
-//                        android.support.design.R.styleable.CoordinatorLayout_Layout_layout_behavior));
-//            }
+                    R.styleable.CoordinatorLayout_Layout_layout_behavior);
+            if (mBehaviorResolved) {
+                mBehavior = parseBehavior(context, attrs, a.getString(
+                        R.styleable.CoordinatorLayout_Layout_layout_behavior));
+            }
             a.recycle();
 
             if (mBehavior != null) {
