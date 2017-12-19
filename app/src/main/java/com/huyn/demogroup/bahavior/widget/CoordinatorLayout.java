@@ -1352,6 +1352,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
             }
         }
         if (!offsetY) {
+            SysoutUtil.sysout("CoordinatorLayout", "offsetChildByInset");
             setInsetOffsetY(child, 0);
         }
 
@@ -1632,6 +1633,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
+        SysoutUtil.sysout("CoordinatorLayout", "onStartNestedScroll");
         boolean handled = false;
 
         final int childCount = getChildCount();
@@ -1649,11 +1651,13 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
                 lp.acceptNestedScroll(false);
             }
         }
+        SysoutUtil.sysout("CoordinatorLayout", "onStartNestedScroll", "handled", "" + handled);
         return handled;
     }
 
     @Override
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes) {
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedScrollAccepted");
         mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, nestedScrollAxes);
         mNestedScrollingDirectChild = child;
         mNestedScrollingTarget = target;
@@ -1675,6 +1679,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
 
     @Override
     public void onStopNestedScroll(View target) {
+        SysoutUtil.sysout("CoordinatorLayout", "onStopNestedScroll");
         mNestedScrollingParentHelper.onStopNestedScroll(target);
 
         final int childCount = getChildCount();
@@ -1700,6 +1705,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedScroll");
         final int childCount = getChildCount();
         boolean accepted = false;
 
@@ -1725,6 +1731,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedPreScroll");
         int xConsumed = 0;
         int yConsumed = 0;
         boolean accepted = false;
@@ -1761,6 +1768,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedFling");
         boolean handled = false;
 
         final int childCount = getChildCount();
@@ -1780,11 +1788,13 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
         if (handled) {
             onChildViewsChanged(EVENT_NESTED_SCROLL);
         }
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedFling", "handled", "" + handled);
         return handled;
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedPreFling");
         boolean handled = false;
 
         final int childCount = getChildCount();
@@ -1800,6 +1810,7 @@ public class CoordinatorLayout extends ViewGroup implements NestedScrollingParen
                 handled |= viewBehavior.onNestedPreFling(this, view, target, velocityX, velocityY);
             }
         }
+        SysoutUtil.sysout("CoordinatorLayout", "onNestedPreFling", "handled", "" + handled);
         return handled;
     }
 

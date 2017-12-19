@@ -25,6 +25,7 @@ import android.support.v4.view.WindowInsetsCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
 
@@ -133,6 +134,10 @@ public class AppBarLayout extends LinearLayout {
 
     private final int[] mTmpStatesArray = new int[2];
 
+    private int highMediumGradient = -Integer.MAX_VALUE;
+    private int lowMediumGradient = -Integer.MAX_VALUE;
+    private int mToolbarHeight = 90;
+
     public AppBarLayout(Context context) {
         this(context, null);
     }
@@ -176,13 +181,26 @@ public class AppBarLayout extends LinearLayout {
                 });
     }
 
-    /**
-     * Add a listener that will be called when the offset of this {@link AppBarLayout} changes.
-     *
-     * @param listener The listener that will be called when the offset changes.]
-     *
-     * @see #removeOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener)
-     */
+    public void setMediumGradient(int high, int low) {
+        this.highMediumGradient = high;
+        this.lowMediumGradient = low;
+    }
+
+    public void pinHeaderTopBottomOffset(int newOffset) {
+        final CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) getLayoutParams();
+        final CoordinatorLayout.Behavior viewBehavior = lp.getBehavior();
+        if (viewBehavior != null && viewBehavior instanceof HeaderBehavior) {
+            ((HeaderBehavior) viewBehavior).setHeaderTopBottomOffset((CoordinatorLayout) getParent(), this, newOffset);
+        }
+    }
+
+        /**
+         * Add a listener that will be called when the offset of this {@link AppBarLayout} changes.
+         *
+         * @param listener The listener that will be called when the offset changes.]
+         *
+         * @see #removeOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener)
+         */
     public void addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener listener) {
         if (mListeners == null) {
             mListeners = new ArrayList<>();
@@ -200,6 +218,40 @@ public class AppBarLayout extends LinearLayout {
     public void removeOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener listener) {
         if (mListeners != null && listener != null) {
             mListeners.remove(listener);
+        }
+    }
+
+    private OnPreDrawListener mOnPreDrawListener;
+    class OnPreDrawListener implements ViewTreeObserver.OnPreDrawListener {
+        @Override
+        public boolean onPreDraw() {
+            pinHeaderTopBottomOffset(-200);
+            detatchViewTreeObserver();
+            return true;
+        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (mOnPreDrawListener == null) {
+            mOnPreDrawListener = new OnPreDrawListener();
+        }
+        final ViewTreeObserver vto = getViewTreeObserver();
+        vto.addOnPreDrawListener(mOnPreDrawListener);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        detatchViewTreeObserver();
+    }
+
+    private void detatchViewTreeObserver() {
+        if (mOnPreDrawListener != null) {
+            final ViewTreeObserver vto = getViewTreeObserver();
+            vto.removeOnPreDrawListener(mOnPreDrawListener);
+            mOnPreDrawListener = null;
         }
     }
 
@@ -353,7 +405,7 @@ public class AppBarLayout extends LinearLayout {
                 break;
             }
         }
-        return mTotalScrollRange = Math.max(0, range - getTopInset());
+        return mTotalScrollRange = Math.max(0, range - getTopInset()) - mToolbarHeight;
     }
 
     boolean hasScrollableChildren() {
@@ -790,6 +842,7 @@ public class AppBarLayout extends LinearLayout {
                                            View directTargetChild, View target, int nestedScrollAxes) {
             // Return true if we're nested scrolling vertically, and we have scrollable children
             // and the scrolling view is big enough to scroll
+            SysoutUtil.sysout("AppBarLayout", "onStartNestedScroll");
             final boolean started = (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0
                     && child.hasScrollableChildren()
                     && parent.getHeight() - directTargetChild.getHeight() <= child.getHeight();
@@ -802,12 +855,14 @@ public class AppBarLayout extends LinearLayout {
             // A new nested scroll has started so clear out the previous ref
             mLastNestedScrollingChildRef = null;
 
+            SysoutUtil.sysout("AppBarLayout", "onStartNestedScroll", "started", "" + started);
             return started;
         }
 
         @Override
         public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child,
                                       View target, int dx, int dy, int[] consumed) {
+            SysoutUtil.sysout("AppBarLayout", "onNestedPreScroll", "getDownNestedPreScrollRange:" + child.getDownNestedPreScrollRange());
             if (dy != 0 && !mSkipNestedPreScroll) {
                 int min, max;
                 if (dy < 0) {
@@ -820,6 +875,7 @@ public class AppBarLayout extends LinearLayout {
                     max = 0;
                 }
                 consumed[1] = scroll(coordinatorLayout, child, dy, min, max);
+                SysoutUtil.sysout("AppBarLayout", "onNestedPreScroll", "consumed", "" + consumed[0]);
             }
         }
 
@@ -827,6 +883,7 @@ public class AppBarLayout extends LinearLayout {
         public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child,
                                    View target, int dxConsumed, int dyConsumed,
                                    int dxUnconsumed, int dyUnconsumed) {
+            SysoutUtil.sysout("AppBarLayout", "onNestedScroll");
             if (dyUnconsumed < 0) {
                 // If the scrolling view is scrolling down but not consuming, it's probably be at
                 // the top of it's content
@@ -843,6 +900,7 @@ public class AppBarLayout extends LinearLayout {
         @Override
         public void onStopNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout abl,
                                        View target) {
+            SysoutUtil.sysout("AppBarLayout", "onStopNestedScroll", "snapToChildIfNeeded", "" + (!mWasNestedFlung));
             if (!mWasNestedFlung) {
                 // If we haven't been flung then let's see if the current view has been set to snap
                 snapToChildIfNeeded(coordinatorLayout, abl);
@@ -859,6 +917,7 @@ public class AppBarLayout extends LinearLayout {
         public boolean onNestedFling(final CoordinatorLayout coordinatorLayout,
                                      final AppBarLayout child, View target, float velocityX, float velocityY,
                                      boolean consumed) {
+            SysoutUtil.sysout("AppBarLayout", "onNestedFling");
             boolean flung = false;
 
             if (!consumed) {
@@ -868,10 +927,11 @@ public class AppBarLayout extends LinearLayout {
             } else {
                 // If we're scrolling up and the child also consumed the fling. We'll fake scroll
                 // up to our 'collapsed' offset
+                float currentOffset = getTopBottomOffsetForScrollingSibling();
+                int targetScroll;
                 if (velocityY < 0) {
                     // We're scrolling down
-                    final int targetScroll = -child.getTotalScrollRange()
-                            + child.getDownNestedPreScrollRange();
+                    targetScroll = -child.getTotalScrollRange() + child.getDownNestedPreScrollRange();
                     if (getTopBottomOffsetForScrollingSibling() < targetScroll) {
                         // If we're currently not expanded more than the target scroll, we'll
                         // animate a fling
@@ -880,7 +940,7 @@ public class AppBarLayout extends LinearLayout {
                     }
                 } else {
                     // We're scrolling up
-                    final int targetScroll = -child.getUpNestedPreScrollRange();
+                    targetScroll = -child.getUpNestedPreScrollRange();
                     if (getTopBottomOffsetForScrollingSibling() > targetScroll) {
                         // If we're currently not expanded less than the target scroll, we'll
                         // animate a fling
@@ -888,6 +948,7 @@ public class AppBarLayout extends LinearLayout {
                         flung = true;
                     }
                 }
+                SysoutUtil.sysout("AppBarLayout", "onNestedFling", "animateOffsetTo", "targetScroll : " + targetScroll, "currentScroll : " + currentOffset, "down : " + (velocityY < 0));
             }
 
             mWasNestedFlung = flung;
@@ -905,7 +966,9 @@ public class AppBarLayout extends LinearLayout {
 
         private void animateOffsetTo(final CoordinatorLayout coordinatorLayout,
                                      final AppBarLayout child, final int offset, float velocity) {
-            final int distance = Math.abs(getTopBottomOffsetForScrollingSibling() - offset);
+            int height = child.getHeight();
+            int targetOffset = (offset == -height ? offset+child.mToolbarHeight : offset);
+            final int distance = Math.abs(getTopBottomOffsetForScrollingSibling() - targetOffset);
 
             final int duration;
             velocity = Math.abs(velocity);
@@ -916,7 +979,7 @@ public class AppBarLayout extends LinearLayout {
                 duration = (int) ((distanceRatio + 1) * 150);
             }
 
-            animateOffsetWithDuration(coordinatorLayout, child, offset, duration);
+            animateOffsetWithDuration(coordinatorLayout, child, targetOffset, duration);
         }
 
         private void animateOffsetWithDuration(final CoordinatorLayout coordinatorLayout,
@@ -959,6 +1022,7 @@ public class AppBarLayout extends LinearLayout {
         }
 
         private void snapToChildIfNeeded(CoordinatorLayout coordinatorLayout, AppBarLayout abl) {
+            SysoutUtil.sysout("AppBarLayout", "snapToChildIfNeeded");
             final int offset = getTopBottomOffsetForScrollingSibling();
             final int offsetChildIndex = getChildIndexOnOffset(abl, offset);
             if (offsetChildIndex >= 0) {
@@ -991,13 +1055,36 @@ public class AppBarLayout extends LinearLayout {
                         }
                     }
 
-                    final int newOffset = offset < (snapBottom + snapTop) / 2
-                            ? snapBottom
-                            : snapTop;
-                    animateOffsetTo(coordinatorLayout, abl,
-                            MathUtils.constrain(newOffset, -abl.getTotalScrollRange(), 0), 0);
+                    SysoutUtil.sysout("AppBarLayout", "snapToChildIfNeeded", "offset:"+offset, "snapBottom:"+snapBottom, "snapTop:"+snapTop);
+                    final int newOffset = getNextGradientOffset(offset, snapTop, snapBottom, abl);//constrain(offset, snapTop, snapBottom);
+                    SysoutUtil.sysout("AppBarLayout", "snapToChildIfNeeded", "newOffset:"+newOffset, "getTotalScrollRange:" + (-abl.getTotalScrollRange()));
+                    int targetOffset = MathUtils.constrain(newOffset, -abl.getTotalScrollRange(), 0);
+                    SysoutUtil.sysout("AppBarLayout", "snapToChildIfNeeded", "" + targetOffset);
+                    animateOffsetTo(coordinatorLayout, abl, targetOffset, 0);
                 }
             }
+        }
+
+        private int getNextGradientOffset(int offset, int top, int bottom, AppBarLayout abl) {
+            if(abl.lowMediumGradient < bottom || abl.highMediumGradient < bottom) {
+                abl.highMediumGradient = bottom * 1 / 3;
+                abl.lowMediumGradient = bottom * 2 / 3;
+                return constrain(offset, top, bottom+abl.mToolbarHeight);
+            }
+            if(offset < abl.lowMediumGradient) {
+                return constrain(offset, abl.lowMediumGradient, bottom+abl.mToolbarHeight);
+            } else if(offset < abl.highMediumGradient) {
+                return constrain(offset, abl.highMediumGradient, abl.lowMediumGradient);
+            } else {
+                return constrain(offset, top, abl.highMediumGradient);
+            }
+        }
+
+        private int constrain(int offset, int top, int bottom) {
+            int newOffset = offset < (top + bottom) / 2
+                    ? bottom
+                    : top;
+            return newOffset;
         }
 
         private static boolean checkFlag(final int flags, final int check) {
@@ -1110,6 +1197,9 @@ public class AppBarLayout extends LinearLayout {
         @Override
         int setHeaderTopBottomOffset(CoordinatorLayout coordinatorLayout,
                                      AppBarLayout appBarLayout, int newOffset, int minOffset, int maxOffset) {
+            int topAndBottomOffset = getTopAndBottomOffset();
+            int offsetDelta = mOffsetDelta;
+            //SysoutUtil.sysout("AppBarLayout", "setHeaderTopBottomOffset", "topAndBottomOffset:" + topAndBottomOffset, "offsetDelta:" + offsetDelta);
             final int curOffset = getTopBottomOffsetForScrollingSibling();
             int consumed = 0;
 
@@ -1143,12 +1233,14 @@ public class AppBarLayout extends LinearLayout {
                     // Update the AppBarLayout's drawable state (for any elevation changes)
                     updateAppBarLayoutDrawableState(coordinatorLayout, appBarLayout, newOffset,
                             newOffset < curOffset ? -1 : 1);
+                    //SysoutUtil.sysout("AppBarLayout", "setHeaderTopBottomOffset", "newOffset", "" + newOffset);
                 }
             } else {
                 // Reset the offset delta
                 mOffsetDelta = 0;
             }
 
+            //SysoutUtil.sysout("AppBarLayout", "setHeaderTopBottomOffset", "" + consumed);
             return consumed;
         }
 

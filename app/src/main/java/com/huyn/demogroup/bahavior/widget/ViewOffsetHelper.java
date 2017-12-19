@@ -50,12 +50,16 @@ class ViewOffsetHelper {
         mLayoutTop = mView.getTop();
         mLayoutLeft = mView.getLeft();
 
+        //SysoutUtil.sysout("ViewOffsetHelper", "onViewLayout", "mLayoutTop:" + mLayoutTop, mView.getClass().getSimpleName());
+
         // And offset it as needed
         updateOffsets();
     }
 
     private void updateOffsets() {
-        ViewCompat.offsetTopAndBottom(mView, mOffsetTop - (mView.getTop() - mLayoutTop));
+        int targetOffset = mOffsetTop - (mView.getTop() - mLayoutTop);
+        //SysoutUtil.sysout("ViewOffsetHelper", "updateOffsets", "mLayoutTop:" + mLayoutTop, "top:" + mView.getTop(), "targetOffset:" + targetOffset, mView.getClass().getSimpleName());
+        ViewCompat.offsetTopAndBottom(mView, targetOffset);
         ViewCompat.offsetLeftAndRight(mView, mOffsetLeft - (mView.getLeft() - mLayoutLeft));
     }
 
@@ -66,6 +70,7 @@ class ViewOffsetHelper {
      * @return true if the offset has changed
      */
     public boolean setTopAndBottomOffset(int offset) {
+        //SysoutUtil.sysout("ViewOffsetHelper", "setTopAndBottomOffset", "offset:" + offset);
         if (mOffsetTop != offset) {
             mOffsetTop = offset;
             updateOffsets();
@@ -90,6 +95,7 @@ class ViewOffsetHelper {
     }
 
     public int getTopAndBottomOffset() {
+        //SysoutUtil.sysout("ViewOffsetHelper", "getTopAndBottomOffset", "top:" + mView.getTop(), "mOfffsetTop:" + mOffsetTop);
         return mOffsetTop;
     }
 

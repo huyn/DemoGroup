@@ -17,7 +17,8 @@
 <com.huyn.demogroup.bahavior.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#0000ff">
 
     <!--<android.support.v7.widget.RecyclerView
         android:id="@android:id/list"
@@ -37,10 +38,11 @@
         app:layout_behavior="@string/scrolling_view_behavior" />
 
     <com.huyn.demogroup.bahavior.widget.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <!--<android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -51,6 +53,25 @@
                 style="@style/AppStyle.MdToolbar"
                 app:layout_collapseMode="pin"
                 app:navigationIcon="@mipmap/ic_launcher" />
-        </android.support.design.widget.CollapsingToolbarLayout>
+        </android.support.design.widget.CollapsingToolbarLayout>-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_scrollFlags="scroll|snap">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="hello appbarlayout"
+                android:background="#00000000"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="30dip"
+                android:text="this is indicator"
+                android:background="#ff0000"/>
+        </LinearLayout>
     </com.huyn.demogroup.bahavior.widget.AppBarLayout>
 </com.huyn.demogroup.bahavior.widget.CoordinatorLayout>

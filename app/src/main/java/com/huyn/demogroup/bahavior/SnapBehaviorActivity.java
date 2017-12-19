@@ -21,6 +21,8 @@ package com.huyn.demogroup.bahavior;
  */
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,6 +31,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.huyn.demogroup.R;
+import com.huyn.demogroup.bahavior.widget.AppBarLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +44,10 @@ public class SnapBehaviorActivity extends AppCompatActivity {
 //    @BindView(android.R.id.list)
 //    RecyclerView vRecyclerView;
 
-    @BindView(R.id.toolbar)
-    Toolbar vToolbar;
+//    @BindView(R.id.toolbar)
+//    Toolbar vToolbar;
+
+    AppBarLayout appBarLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,18 +55,37 @@ public class SnapBehaviorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gsd_scroll_snap);
         ButterKnife.bind(this);
 
-        setSupportActionBar(vToolbar);
-        vToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
-            public void onClick(View v) {
-                onBackPressed();
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                //System.out.println("+++offsetchanged ... " + verticalOffset + "/" + appBarLayout.getTotalScrollRange());
             }
         });
+
+        /*new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                appBarLayout.pinHeaderTopBottomOffset(-300);
+            }
+        }, 1000);*/
+
+//        setSupportActionBar(vToolbar);
+//        vToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                onBackPressed();
+//            }
+//        });
 
 //        vRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 //        vRecyclerView.setAdapter(new DynamicAdapter(getSampleData()));
 
         ViewPager mPager = (ViewPager) findViewById(R.id.viewPager);
+
+        ViewCompat.offsetTopAndBottom(appBarLayout, 400);
+        ViewCompat.offsetTopAndBottom(mPager, 400);
+
 //        ResumeAdapter mPagerAdapter = new ResumeAdapter(getSupportFragmentManager());
 //        mPager.setAdapter(mPagerAdapter);
 //        // ViewPager切换时NestedScrollView滑动到顶部

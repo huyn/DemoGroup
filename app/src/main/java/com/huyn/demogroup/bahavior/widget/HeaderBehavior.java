@@ -206,11 +206,13 @@ abstract class HeaderBehavior<V extends View> extends ViewOffsetBehavior<V> {
 
             if (curOffset != newOffset) {
                 setTopAndBottomOffset(newOffset);
+                //SysoutUtil.sysout("HeaderBehavior", "setHeaderTopBottomOffset", "newOffset", "" + newOffset);
                 // Update how much dy we have consumed
                 consumed = curOffset - newOffset;
             }
         }
 
+        //SysoutUtil.sysout("HeaderBehavior", "setHeaderTopBottomOffset", "" + consumed);
         return consumed;
     }
 

@@ -110,6 +110,7 @@ abstract class HeaderScrollingViewBehavior extends ViewOffsetBehavior<View> {
             final CoordinatorLayout.LayoutParams lp =
                     (CoordinatorLayout.LayoutParams) child.getLayoutParams();
             final Rect available = mTempRect1;
+            SysoutUtil.sysout("HeaderScrollingViewBehavior", "layoutChild", "header.bottom:" + header.getBottom());
             available.set(parent.getPaddingLeft() + lp.leftMargin,
                     header.getBottom() + lp.topMargin,
                     parent.getWidth() - parent.getPaddingRight() - lp.rightMargin,
