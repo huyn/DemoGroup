@@ -18,8 +18,6 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
-import com.huyn.demogroup.video.glrender.SegmentAndMixGLRender;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,7 +29,7 @@ import java.nio.FloatBuffer;
  * Created by huyaonan on 2017/12/12.
  */
 
-public class EncodeVideoByOpenGL {
+public class EncodeVideoFromImagesByOpenGL {
 
     private static final String TAG = "EncodeAndMuxTest";
     private static final boolean VERBOSE = true;           // lots of logging
@@ -40,8 +38,6 @@ public class EncodeVideoByOpenGL {
     private static final String MIME_TYPE = "video/avc";    // H.264 Advanced Video Coding
     private static final int FRAME_RATE = 20;               // 20fps
     private static final int IFRAME_INTERVAL = 10;          // 10 seconds between I-frames
-
-    private static final int MAX = 200;
 
     // size of a frame, in pixels
     private int mWidth = -1;
@@ -61,7 +57,7 @@ public class EncodeVideoByOpenGL {
 
     private String outputPath;
 
-    public void testEncodeVideoToMp4(File srcFile, File maskFile, File styledFile, String targetFile) {
+    public void testEncodeVideoToMp4(File srcFile, String targetFile) {
         long start = System.currentTimeMillis();
         try {
             File target = new File(targetFile);
@@ -75,16 +71,14 @@ public class EncodeVideoByOpenGL {
                 if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
                     break;
 
-                if(width == 0 || height == 0) {
-                    Bitmap frame = BitmapFactory.decodeFile(files[i].getAbsolutePath());
-                    if (frame != null) {
-                        width = frame.getWidth();
-                        height = frame.getHeight();
-                        break;
-                    }
+                Bitmap frame = BitmapFactory.decodeFile(files[i].getAbsolutePath());
+                if(frame != null) {
+                    width = frame.getWidth();
+                    height = frame.getHeight();
+                    break;
                 }
             }
-            testEncodeVideoToMp4(width, height, files, maskFile.listFiles(), styledFile.listFiles());
+            testEncodeVideoToMp4(width, height, files);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "IO", e);
@@ -96,7 +90,7 @@ public class EncodeVideoByOpenGL {
     /**
      * Tests encoding of AVC video from a Surface.  The output is saved as an MP4 file.
      */
-    public void testEncodeVideoToMp4(int width, int height, File[] files, File[] masks, File[] styled) {
+    public void testEncodeVideoToMp4(int width, int height, File[] files) {
         // QVGA at 2Mbps
         mWidth = width;
         mHeight = height;
@@ -106,26 +100,15 @@ public class EncodeVideoByOpenGL {
             prepareEncoder();
             mInputSurface.makeCurrent();
 
-            long readTime = 0;
-
-            for (int i = 0; i < files.length && i < MAX; i++) {
-                if (!files[i].exists() || !(files[i].getName().endsWith(".png") || files[i].getName().endsWith(".jpg")))
-                    continue;
-
+            for (int i = 0; i < files.length; i++) {
                 // Feed any pending encoder output into the muxer.
                 drainEncoder(false);
 
                 System.out.println("encode : " + files[i].getName());
 
-                long start = System.currentTimeMillis();
                 Bitmap bitmap = BitmapFactory.decodeFile(files[i].getAbsolutePath());
-                Bitmap bitmapMask = BitmapFactory.decodeFile(masks[i].getAbsolutePath());
-                Bitmap bitmapStyled = BitmapFactory.decodeFile(styled[i].getAbsolutePath());
-                readTime += System.currentTimeMillis() - start;
-                System.out.println("encode success..." + bitmapMask.getWidth());
-//                Bitmap bitmap = SegmentUtil.doSegment(files[i], masks[i], styled[i]);
                 // Generate a new frame of input.
-                generateSurfaceFrame(bitmap, bitmapMask, bitmapStyled);
+                generateSurfaceFrame(bitmap);
                 mInputSurface.setPresentationTime(computePresentationTimeNsec(i));
 
                 // Submit it to the encoder.  The eglSwapBuffers call will block if the input
@@ -137,15 +120,13 @@ public class EncodeVideoByOpenGL {
                 mInputSurface.swapBuffers();
             }
 
-            System.out.println("++++io cost : " + readTime);
-
             // send end-of-stream to encoder, and drain remaining output
             drainEncoder(true);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             // release encoder, muxer, and input Surface
-           //releaseEncoder();
+            //releaseEncoder();
         }
         releaseEncoder();
 
@@ -310,8 +291,8 @@ public class EncodeVideoByOpenGL {
         }
     }
 
-    private void generateSurfaceFrame(Bitmap bitmap, Bitmap mask, Bitmap styled) {
-        mInputSurface.drawImage(bitmap, mask, styled);
+    private void generateSurfaceFrame(Bitmap bitmap) {
+        mInputSurface.drawImage(bitmap);
     }
 
     /**
@@ -336,7 +317,7 @@ public class EncodeVideoByOpenGL {
     private static class CodecInputSurface {
         private static final int EGL_RECORDABLE_ANDROID = 0x3142;
 
-        private SegmentAndMixGLRender mTextureRender;
+        private STextureRender mTextureRender;
         private Surface mSurface;
 
         EGLDisplay mEGLDisplay;
@@ -455,7 +436,7 @@ public class EncodeVideoByOpenGL {
          * Creates interconnected instances of TextureRender, SurfaceTexture, and Surface.
          */
         private void setup() {
-            mTextureRender = new SegmentAndMixGLRender();
+            mTextureRender = new STextureRender(mWidth, mHeight);
             onSurfaceCreated();
             onSurfaceChanged();
         }
@@ -550,7 +531,7 @@ public class EncodeVideoByOpenGL {
         /**
          * Draws the data from SurfaceTexture onto the current EGL surface.
          */
-        public void drawImage(Bitmap bitmap, Bitmap mask, Bitmap styled) {
+        public void drawImage(Bitmap bitmap) {
             checkGlError("onDrawFrame clear");
             mTextureID = OpenGlUtils.loadTexture(bitmap, mTextureID, false);
             if (bitmap != null) {
@@ -558,9 +539,7 @@ public class EncodeVideoByOpenGL {
             }
 
             checkGlError("loadTexture");
-
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer, mask, styled);
+            mTextureRender.drawFrame(mTextureID, mGLCubeBuffer, mGLTextureBuffer);
         }
 
         /**
@@ -587,6 +566,102 @@ public class EncodeVideoByOpenGL {
         public void setPresentationTime(long nsecs) {
             EGLExt.eglPresentationTimeANDROID(mEGLDisplay, mEGLSurface, nsecs);
             checkEglError("eglPresentationTimeANDROID");
+        }
+
+    }
+
+    /**
+     * Code for rendering a texture onto a surface using OpenGL ES 2.0.
+     */
+    private static class STextureRender {
+
+        public static final String NO_FILTER_VERTEX_SHADER = "" +
+                "attribute vec4 position;\n" +
+                "attribute vec4 inputTextureCoordinate;\n" +
+                " \n" +
+                "varying vec2 textureCoordinate;\n" +
+                " \n" +
+                "void main()\n" +
+                "{\n" +
+                "    gl_Position = position;\n" +
+                "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+                "}";
+        public static final String NO_FILTER_FRAGMENT_SHADER = "" +
+                "varying highp vec2 textureCoordinate;\n" +
+                " \n" +
+                "uniform sampler2D inputImageTexture;\n" +
+                " \n" +
+                "void main()\n" +
+                "{\n" +
+                "     gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+                "}";
+
+        private int mProgram;
+        private int mWidth, mHeight;
+
+        protected int mGLAttribPosition;
+        protected int mGLUniformTexture;
+        protected int mGLAttribTextureCoordinate;
+
+        public STextureRender(int w, int h) {
+            mWidth = w;
+            mHeight = h;
+        }
+
+        /**
+         * Draws the external texture in SurfaceTexture onto the current EGL surface.
+         */
+        public void drawFrame(int mTextureID, final FloatBuffer cubeBuffer, final FloatBuffer textureBuffer) {
+            checkGlError("onDrawFrame start");
+
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+            GLES20.glUseProgram(mProgram);
+            checkGlError("glUseProgram");
+
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            checkGlError("glActiveTexture");
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID);
+
+            checkGlError("glBindTexture");
+
+            cubeBuffer.position(0);
+            GLES20.glVertexAttribPointer(mGLAttribPosition, 2, GLES20.GL_FLOAT, false, 0, cubeBuffer);
+            GLES20.glEnableVertexAttribArray(mGLAttribPosition);
+            textureBuffer.position(0);
+            GLES20.glVertexAttribPointer(mGLAttribTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0,
+                    textureBuffer);
+            GLES20.glEnableVertexAttribArray(mGLAttribTextureCoordinate);
+            if (mTextureID != OpenGlUtils.NO_TEXTURE) {
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID);
+                GLES20.glUniform1i(mGLUniformTexture, 0);
+            }
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+            GLES20.glDisableVertexAttribArray(mGLAttribPosition);
+            GLES20.glDisableVertexAttribArray(mGLAttribTextureCoordinate);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        }
+
+        /**
+         * Initializes GL state.  Call this after the EGL surface has been created and made current.
+         */
+        public void surfaceCreated() {
+            mProgram = OpenGlUtils.loadProgram(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER);
+
+            if (mProgram == 0) {
+                throw new RuntimeException("failed creating program");
+            }
+
+            mGLAttribPosition = GLES20.glGetAttribLocation(mProgram, "position");
+            mGLUniformTexture = GLES20.glGetUniformLocation(mProgram, "inputImageTexture");
+            mGLAttribTextureCoordinate = GLES20.glGetAttribLocation(mProgram,
+                    "inputTextureCoordinate");
+
+            //GLES20.glUseProgram(mProgram);
+        }
+
+        public void surfaceChanged() {
+            GLES20.glUseProgram(mProgram);
         }
 
     }

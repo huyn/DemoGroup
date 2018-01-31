@@ -93,10 +93,24 @@ public class VideoEncodeAndDecodeExampleActivity extends Activity {
                 File src = new File(Environment.getExternalStorageDirectory() + "/video2");
                 File mask = new File(Environment.getExternalStorageDirectory() + "/video2/segment_out");
                 File styled = new File(Environment.getExternalStorageDirectory() + "/video2/styled");
-                String resultPath = Environment.getExternalStorageDirectory() + "/video2/result_new.mp4";
-                new EncodeVideoByOpenGL().testEncodeVideoToMp4(styled, mask, src, resultPath);
+                final String resultPath = Environment.getExternalStorageDirectory() + "/video2/result_new.mp4";
+                final String mp4 = Environment.getExternalStorageDirectory() + "/video2/mixed.mp4";
+                String audio = Environment.getExternalStorageDirectory() + "/test_audio.mp3";
+                String audioAac = Environment.getExternalStorageDirectory() + "/video2/audio.aac";
+                //new EncodeVideoByOpenGL().testEncodeVideoToMp4(styled, mask, src, resultPath);
                 //new EncodeToVideo().encode(src, resultPath);
 
+                //final String imagesToVideo = Environment.getExternalStorageDirectory() + "/video2/imagesToVideo.mp4";
+                //new EncodeVideoFromImagesByOpenGL().testEncodeVideoToMp4(styled, imagesToVideo);
+                File audioFile = new File(audioAac);
+                if(audioFile.exists())
+                    audioFile.delete();
+                MediaUtil.getInstance().convertToAccIfNeeded(audio, audioAac, new MediaUtil.OnAudioConvertListener() {
+                    @Override
+                    public void onParsed(String path) {
+                        MediaUtil.getInstance().combineMedia(resultPath, path, mp4);
+                    }
+                });
                 //new EncodeVideoByMediaCodec().testEncodeVideoToMp4();
             }
         }).start();
