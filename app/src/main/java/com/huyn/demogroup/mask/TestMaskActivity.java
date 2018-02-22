@@ -12,13 +12,10 @@ import com.huyn.demogroup.R;
 
 public class TestMaskActivity extends Activity {
 
-    protected MaskView mMask;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mask);
-
-        mMask = (MaskView) findViewById(R.id.mask_view);
+        //setContentView(R.layout.activity_mask);
+        setContentView(R.layout.activity_mask_gradient);
     }
 }
